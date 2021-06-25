@@ -1,7 +1,6 @@
 package tile
 
 import (
-	"github.com/flywave/go-geom"
 	geom "github.com/flywave/go-geom"
 )
 

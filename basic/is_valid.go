@@ -3,8 +3,8 @@ package basic
 import (
 	"log"
 
-	"github.com/go-spatial/tegola"
-	"github.com/go-spatial/tegola/maths"
+	gvt "github.com/flywave/go-vector-tiler"
+	"github.com/flywave/go-vector-tiler/maths"
 )
 
 // IsValid returns whether the line is valid according to the OGC specifiction
@@ -31,7 +31,7 @@ func (l Line) IsValid() bool {
 		for _, inpt1 := range l[i+2 : endj] {
 			// If we are looking at the same point
 			//log.Println(i, j, "Looking:", pt0, pt1, inpt0, inpt1)
-			if tegola.IsPointEqual(pt0, inpt0) && tegola.IsPointEqual(pt1, inpt1) {
+			if gvt.IsPointEqual(pt0, inpt0) && gvt.IsPointEqual(pt1, inpt1) {
 				continue
 			}
 			l1, l2 := maths.Line{pt0.AsPt(), pt1.AsPt()}, maths.Line{inpt0.AsPt(), inpt1.AsPt()}

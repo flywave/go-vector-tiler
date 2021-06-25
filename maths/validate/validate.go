@@ -3,13 +3,12 @@ package validate
 import (
 	"context"
 
-	"github.com/flywave/go-geom"
+	geom "github.com/flywave/go-geom"
 	"github.com/flywave/go-vector-tiler/basic"
-	"github.com/go-spatial/tegola"
-	"github.com/go-spatial/tegola/maths"
-	"github.com/go-spatial/tegola/maths/clip"
-	"github.com/go-spatial/tegola/maths/hitmap"
-	"github.com/go-spatial/tegola/maths/makevalid"
+	"github.com/flywave/go-vector-tiler/maths"
+	"github.com/flywave/go-vector-tiler/maths/clip"
+	"github.com/flywave/go-vector-tiler/maths/hitmap"
+	"github.com/flywave/go-vector-tiler/maths/makevalid"
 )
 
 func CleanLinestring(g []float64) (l []float64, err error) {
@@ -37,12 +36,12 @@ func CleanLinestring(g []float64) (l []float64, err error) {
 	return l, nil
 }
 
-func LineStringToSegments(l tegola.LineString) ([]maths.Line, error) {
-	ppln := tegola.LineAsPointPairs(l)
+func LineStringToSegments(l geom.LineString) ([]maths.Line, error) {
+	ppln := geom.LineAsPointPairs(l)
 	return maths.NewSegments(ppln)
 }
 
-func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *geom.Extent, gs ...tegola.Polygon) (mp basic.MultiPolygon, err error) {
+func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *geom.Extent, gs ...geom.Polygon) (mp basic.MultiPolygon, err error) {
 	var plygLines [][]maths.Line
 	for _, g := range gs {
 		for _, l := range g.Sublines() {
@@ -76,7 +75,7 @@ func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *geom.Extent, gs
 	return mp, err
 }
 
-func scalePolygon(p tegola.Polygon, factor float64) (bp basic.Polygon) {
+func scalePolygon(p geom.Polygon, factor float64) (bp basic.Polygon) {
 	lines := p.Sublines()
 	bp = make(basic.Polygon, len(lines))
 	for i := range lines {
@@ -89,7 +88,7 @@ func scalePolygon(p tegola.Polygon, factor float64) (bp basic.Polygon) {
 	return bp
 }
 
-func scaleMultiPolygon(p tegola.MultiPolygon, factor float64) (bmp basic.MultiPolygon) {
+func scaleMultiPolygon(p geom.MultiPolygon, factor float64) (bmp basic.MultiPolygon) {
 	polygons := p.Polygons()
 	bmp = make(basic.MultiPolygon, len(polygons))
 	for i := range polygons {
@@ -100,12 +99,12 @@ func scaleMultiPolygon(p tegola.MultiPolygon, factor float64) (bmp basic.MultiPo
 
 // CleanGeometry will apply various geoprocessing algorithems to the provided geometry.
 // the extent will be used as a clipping region. if no clipping is desired, pass in a nil extent.
-func CleanGeometry(ctx context.Context, g tegola.Geometry, extent *geom.Extent) (geo tegola.Geometry, err error) {
+func CleanGeometry(ctx context.Context, g geom.Geometry, extent *geom.Extent) (geo geom.Geometry, err error) {
 	if g == nil {
 		return nil, nil
 	}
 	switch gg := g.(type) {
-	case tegola.Polygon:
+	case geom.Polygon:
 		expp := scalePolygon(gg, 10.0)
 		ext := extent.ScaleBy(10.0)
 		hm := hitmap.NewFromGeometry(expp)
@@ -115,7 +114,7 @@ func CleanGeometry(ctx context.Context, g tegola.Geometry, extent *geom.Extent) 
 		}
 		return scaleMultiPolygon(mp, 0.10), nil
 
-	case tegola.MultiPolygon:
+	case geom.MultiPolygon:
 		expp := scaleMultiPolygon(gg, 10.0)
 		ext := extent.ScaleBy(10.0)
 		hm := hitmap.NewFromGeometry(expp)
@@ -125,7 +124,7 @@ func CleanGeometry(ctx context.Context, g tegola.Geometry, extent *geom.Extent) 
 		}
 		return scaleMultiPolygon(mp, 0.10), nil
 
-	case tegola.MultiLine:
+	case geom.MultiLine:
 		var ml basic.MultiLine
 		lns := gg.Lines()
 		for i := range lns {
@@ -137,7 +136,7 @@ func CleanGeometry(ctx context.Context, g tegola.Geometry, extent *geom.Extent) 
 			ml = append(ml, nls...)
 		}
 		return ml, nil
-	case tegola.LineString:
+	case geom.LineString:
 		// 	log.Println("Clip LineString Buff", buff)
 		nls, err := clip.LineString(gg, extent)
 		return basic.MultiLine(nls), err

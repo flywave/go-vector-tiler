@@ -3,8 +3,8 @@ package basic
 import (
 	"fmt"
 
-	"github.com/go-spatial/tegola"
-	"github.com/go-spatial/tegola/maths"
+	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-vector-tiler/maths"
 )
 
 // Line is a basic line type which is made up of two or more points that don't
@@ -16,7 +16,7 @@ type Line []Point
 func (Line) basicType()                      {}
 func (Line) String() string                  { return "Line" }
 func (l Line) Direction() maths.WindingOrder { return maths.WindingOrderOfLine(l) }
-
+func (Line) GetType() string                 { return string(geom.GeometryLineString) }
 func (l Line) AsPts() []maths.Pt {
 	var line []maths.Pt
 	for _, p := range l {
@@ -25,10 +25,18 @@ func (l Line) AsPts() []maths.Pt {
 	return line
 }
 
+func (l Line) Data() [][]float64 {
+	ps := [][]float64{}
+	for _, ll := range l {
+		ps = append(ps, ll[:])
+	}
+	return ps
+}
+
 // TODO: gdey remove this function when we have moved over to geomLinestring.
-func (l Line) AsGeomLineString() (ln [][2]float64) {
+func (l Line) AsGeomLineString() (ln [][]float64) {
 	for i := range l {
-		ln = append(ln, [2]float64{l[i].X(), l[i].Y()})
+		ln = append(ln, []float64{l[i].X(), l[i].Y()})
 	}
 	return ln
 }
@@ -90,7 +98,7 @@ func NewLineTruncatedFromPt(points ...maths.Pt) Line {
 	return line
 }
 
-func NewLineFromSubPoints(points ...tegola.Point) (l Line) {
+func NewLineFromSubPoints(points ...geom.Point) (l Line) {
 	l = make(Line, 0, len(points))
 	for i := range points {
 		l = append(l, Point{points[i].X(), points[i].Y()})
@@ -98,7 +106,7 @@ func NewLineFromSubPoints(points ...tegola.Point) (l Line) {
 	return l
 }
 
-func NewLineFrom2Float64(points ...[2]float64) (l Line) {
+func NewLineFrom2Float64(points ...[]float64) (l Line) {
 	l = make(Line, 0, len(points))
 	for i := range points {
 		l = append(l, Point{points[i][0], points[i][1]})
@@ -107,10 +115,10 @@ func NewLineFrom2Float64(points ...[2]float64) (l Line) {
 }
 
 // Subpoints return the points in a line.
-func (l Line) Subpoints() (points []tegola.Point) {
-	points = make([]tegola.Point, 0, len(l))
+func (l Line) Subpoints() (points []geom.Point) {
+	points = make([]geom.Point, 0, len(l))
 	for i := range l {
-		points = append(points, tegola.Point(l[i]))
+		points = append(points, geom.Point(l[i]))
 	}
 	return points
 }
@@ -127,14 +135,22 @@ func NewMultiLine(pointPairLines ...[]float64) (ml MultiLine) {
 
 func (MultiLine) String() string { return "MultiLine" }
 
+func (l MultiLine) Data() [][][]float64 {
+	ps := [][][]float64{}
+	for _, ll := range l {
+		ps = append(ps, ll.Data())
+	}
+	return ps
+}
+
 // Just to make basic collection only usable with basic types.
 func (MultiLine) basicType() {}
 
 // Lines are the lines in a Multiline
-func (ml MultiLine) Lines() (lines []tegola.LineString) {
-	lines = make([]tegola.LineString, 0, len(ml))
+func (ml MultiLine) Lines() (lines []geom.LineString) {
+	lines = make([]geom.LineString, 0, len(ml))
 	for i := range ml {
-		lines = append(lines, tegola.LineString(ml[i]))
+		lines = append(lines, &ml[i])
 	}
 	return lines
 }

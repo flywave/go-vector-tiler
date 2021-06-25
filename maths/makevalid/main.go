@@ -1,4 +1,4 @@
-package tile
+package makevalid
 
 import (
 	"context"
@@ -9,12 +9,11 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/flywave/go-geom"
-	dvec3 "github.com/flywave/go3d/float64/vec3"
-	"github.com/go-spatial/tegola/maths"
-	"github.com/go-spatial/tegola/maths/hitmap"
-	"github.com/go-spatial/tegola/maths/makevalid/plyg"
-	"github.com/go-spatial/tegola/maths/points"
+	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-vector-tiler/maths"
+	"github.com/flywave/go-vector-tiler/maths/hitmap"
+	"github.com/flywave/go-vector-tiler/maths/makevalid/plyg"
+	"github.com/flywave/go-vector-tiler/maths/points"
 )
 
 var numWorkers = 1
@@ -41,6 +40,33 @@ func insureConnected(polygons ...[]maths.Line) (ret [][]maths.Line) {
 	}
 	return ret
 }
+
+/*
+func MaxF64(vals ...float64) (max float64) {
+	if len(vals) == 0 {
+		return 0
+	}
+	max = vals[0]
+	for _, f := range vals[1:] {
+		if f > max {
+			max = f
+		}
+	}
+	return max
+}
+func MinF64(vals ...float64) (min float64) {
+	if len(vals) == 0 {
+		return 0
+	}
+	min = vals[0]
+	for _, f := range vals[1:] {
+		if f < min {
+			min = f
+		}
+	}
+	return min
+}
+*/
 
 // destructure2  splits the polygon into a set of segements adding the segments of the clipbox as well.
 func destructure2(polygons [][]maths.Line, clipbox *geom.Extent) []maths.Line {
@@ -85,7 +111,7 @@ func logOutBuildRings(pt2maxy map[maths.Pt]int64, xs []float64, x2pts map[float6
 	return output
 }
 
-func plygsToBoundingBox(plygs [][]maths.Line) *dvec3.Box {
+func plygsToBoundingBox(plygs [][]maths.Line) *geom.Extent {
 	var minx, miny, maxx, maxy float64
 	var init bool
 	for i := range plygs {
@@ -125,7 +151,7 @@ func plygsToBoundingBox(plygs [][]maths.Line) *dvec3.Box {
 			}
 		}
 	}
-	return &dvec3.Box{minx, miny, 0, maxx, maxy, 0}
+	return &geom.Extent{minx, miny, maxx, maxy}
 }
 
 func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *geom.Extent, plygs [][]maths.Line) ([][][]maths.Pt, error) {
@@ -162,6 +188,10 @@ func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *geom.Extent, p
 	flines, err := splitSegments(ctx, segments, clipbox)
 	if err != nil {
 		return nil, err
+	}
+
+	if debug {
+		log.Printf("flines := %#v", flines)
 	}
 
 	pts := allPointsForSegments(flines)
@@ -234,6 +264,12 @@ func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *geom.Extent, p
 				case context.Canceled:
 					cancelled = true
 				default:
+					if debug {
+						logout := fmt.Sprintf("clipbox := %v\n", clipbox)
+						logout += fmt.Sprintf("plygs := %v\n", plygs)
+						logout += logOutBuildRings(pt2MaxY, xs, x2pts)
+						log.Println(logout+"For ", i, "Got error (", err, ") trying to process ")
+					}
 					//panic(err)
 				}
 			}

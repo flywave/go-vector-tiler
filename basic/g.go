@@ -45,6 +45,7 @@ func (g G) AsPolygon() Polygon {
 	}
 	return p
 }
+
 func (g G) AsMultiPolygon() MultiPolygon {
 	bg := g.getbase()
 	p, ok := bg.Geometry.(MultiPolygon)

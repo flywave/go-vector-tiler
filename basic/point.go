@@ -3,8 +3,8 @@ package basic
 import (
 	"fmt"
 
-	"github.com/go-spatial/tegola"
-	"github.com/go-spatial/tegola/maths"
+	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-vector-tiler/maths"
 )
 
 // Point describes a simple 2d point
@@ -21,6 +21,10 @@ func (p *Point) AsPt() maths.Pt {
 	return maths.Pt{p[0], p[1]}
 }
 
+func (bp Point) Data() []float64 {
+	return bp[:]
+}
+
 // X is the x coordinate
 func (bp Point) X() float64 {
 	return bp[0]
@@ -35,6 +39,8 @@ func (p Point) String() string {
 	return fmt.Sprintf("Point(%v,%v)", p[0], p[1])
 }
 
+func (Point) GetType() string { return string(geom.GeometryPoint) }
+
 // Point3 describes a simple 3d point
 type Point3 [3]float64
 
@@ -47,6 +53,12 @@ func (bp Point3) X() float64 {
 }
 func (p Point3) String() string {
 	return fmt.Sprintf("Point3(%v,%v,%v)", p[0], p[1], p[2])
+}
+
+func (Point3) GetType() string { return string(geom.GeometryPoint) }
+
+func (bp Point3) Data() []float64 {
+	return bp[:]
 }
 
 // Y is the y coordinate
@@ -67,7 +79,7 @@ func (MultiPoint) basicType()     {}
 func (MultiPoint) String() string { return "MultiPoint" }
 
 // Points are the points that make up the set
-func (v MultiPoint) Points() (points []tegola.Point) {
+func (v MultiPoint) Points() (points []geom.Point) {
 	for i := range v {
 		points = append(points, v[i])
 	}
@@ -81,7 +93,7 @@ type MultiPoint3 []Point3
 func (MultiPoint3) basicType() {}
 
 // Points are the points that make up the set
-func (v MultiPoint3) Points() (points []tegola.Point) {
+func (v MultiPoint3) Points() (points []geom.Point3) {
 	for i := range v {
 		points = append(points, v[i])
 	}

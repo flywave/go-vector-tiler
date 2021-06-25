@@ -1,8 +1,8 @@
 package basic
 
 import (
-	"github.com/go-spatial/tegola"
-	"github.com/go-spatial/tegola/maths"
+	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-vector-tiler/maths"
 )
 
 // Polygon describes a basic polygon; made up of multiple lines.
@@ -12,8 +12,8 @@ type Polygon []Line
 func (Polygon) basicType() {}
 
 // Sublines returns the lines that make up the polygon.
-func (p Polygon) Sublines() (slines []tegola.LineString) {
-	slines = make([]tegola.LineString, 0, len(p))
+func (p Polygon) Sublines() (slines []geom.LineString) {
+	slines = make([]geom.LineString, 0, len(p))
 	for i := range p {
 		slines = append(slines, p[i])
 	}
@@ -23,6 +23,16 @@ func (Polygon) String() string {
 	return "Polygon"
 }
 
+func (Polygon) GetType() string { return string(geom.GeometryPolygon) }
+
+func (p Polygon) Data() [][][]float64 {
+	ps := [][][]float64{}
+	for _, ll := range p {
+		ps = append(ps, ll.Data())
+	}
+	return ps
+}
+
 // MultiPolygon describes a set of polygons.
 type MultiPolygon []Polygon
 
@@ -30,8 +40,8 @@ type MultiPolygon []Polygon
 func (MultiPolygon) basicType() {}
 
 // Polygons returns the polygons that make up the set.
-func (mp MultiPolygon) Polygons() (polygons []tegola.Polygon) {
-	polygons = make([]tegola.Polygon, 0, len(mp))
+func (mp MultiPolygon) Polygons() (polygons []geom.Polygon) {
+	polygons = make([]geom.Polygon, 0, len(mp))
 	for i := range mp {
 		polygons = append(polygons, mp[i])
 	}
@@ -41,6 +51,16 @@ func (MultiPolygon) String() string {
 	return "MultiPolygon"
 }
 
+func (p MultiPolygon) Data() [][][][]float64 {
+	ps := [][][][]float64{}
+	for _, ll := range p {
+		ps = append(ps, ll.Data())
+	}
+	return ps
+}
+
+func (MultiPolygon) GetType() string { return string(geom.GeometryMultiPolygon) }
+
 func NewPolygon(main []maths.Pt, clines ...[]maths.Pt) Polygon {
 	p := Polygon{NewLineFromPt(main...)}
 	for _, l := range clines {
@@ -48,7 +68,7 @@ func NewPolygon(main []maths.Pt, clines ...[]maths.Pt) Polygon {
 	}
 	return p
 }
-func NewPolygonFromSubLines(lines ...tegola.LineString) (p Polygon) {
+func NewPolygonFromSubLines(lines ...geom.LineString) (p Polygon) {
 	p = make(Polygon, 0, len(lines))
 	for i := range lines {
 		l := NewLineFromSubPoints(lines[i].Subpoints()...)
@@ -57,7 +77,7 @@ func NewPolygonFromSubLines(lines ...tegola.LineString) (p Polygon) {
 	return p
 }
 
-func NewMultiPolygonFromPolygons(polygons ...tegola.Polygon) (mp MultiPolygon) {
+func NewMultiPolygonFromPolygons(polygons ...geom.Polygon) (mp MultiPolygon) {
 	mp = make(MultiPolygon, 0, len(polygons))
 	for i := range polygons {
 		p := NewPolygonFromSubLines(polygons[i].Sublines()...)

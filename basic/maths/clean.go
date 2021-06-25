@@ -3,9 +3,9 @@ package maths
 import (
 	"fmt"
 
-	"github.com/go-spatial/tegola"
-	"github.com/go-spatial/tegola/basic"
-	"github.com/go-spatial/tegola/maths"
+	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-vector-tiler/basic"
+	"github.com/flywave/go-vector-tiler/maths"
 )
 
 var ErrUnableToClean = fmt.Errorf("Unable to clean MultiPolygon.")
@@ -14,7 +14,7 @@ var ErrUnableToClean = fmt.Errorf("Unable to clean MultiPolygon.")
 // It will remove polygons that have no lines, and remove lines that have no points.
 // A valid polygon will have the following shape. The first linestring will be clockwise, and all other
 // linestrings are counter-clockwise.
-func cleanPolygon(p tegola.Polygon) (polygons []basic.Polygon, invalids basic.Polygon) {
+func cleanPolygon(p geom.Polygon) (polygons []basic.Polygon, invalids basic.Polygon) {
 	// If the polygon is empty, return empty polygons.
 	if p == nil {
 		return polygons, invalids
@@ -56,7 +56,7 @@ func cleanPolygon(p tegola.Polygon) (polygons []basic.Polygon, invalids basic.Po
 
 // cleanMultiPolygon will take a look at a multipolygon and attemp to remove, consolidate to turn
 // the given multipolygon into a OGC compliant polygon.
-func cleanMultiPolygon(mpolygon tegola.MultiPolygon) (mp basic.MultiPolygon, err error) {
+func cleanMultiPolygon(mpolygon geom.MultiPolygon) (mp basic.MultiPolygon, err error) {
 	for _, p := range mpolygon.Polygons() {
 		poly, invalids := cleanPolygon(p)
 		invalidLen := len(invalids)
@@ -75,14 +75,14 @@ func cleanMultiPolygon(mpolygon tegola.MultiPolygon) (mp basic.MultiPolygon, err
 	return mp, nil
 }
 
-func MakeValid(geo tegola.Geometry) (basic.Geometry, error) {
+func MakeValid(geo geom.Geometry) (basic.Geometry, error) {
 	switch g := geo.(type) {
 	/*
-		case tegola.Point:
+		case geom.Point:
 			return basic.Point{g.X(), g.Y()}
-		case tegola.LineString:
+		case geom.LineString:
 			return basic.CloneLine(g)
-		case tegola.Polygon:
+		case geom.Polygon:
 			// We are going to make the polygon OGC valid
 
 				pl, invalids := cleanPolygon(g)
@@ -92,7 +92,7 @@ func MakeValid(geo tegola.Geometry) (basic.Geometry, error) {
 
 				}
 	*/
-	case tegola.MultiPolygon:
+	case geom.MultiPolygon:
 		return cleanMultiPolygon(g)
 	}
 	return basic.Clone(geo), nil

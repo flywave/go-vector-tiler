@@ -1,7 +1,7 @@
 package tile
 
 import (
-	"github.com/go-spatial/tegola/maths"
+	"github.com/flywave/go-vector-tiler/maths"
 )
 
 type colPtMap struct {

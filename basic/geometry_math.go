@@ -6,9 +6,11 @@ import (
 
 	"errors"
 
-	"github.com/go-spatial/geom"
-	"github.com/go-spatial/tegola"
-	"github.com/go-spatial/tegola/maths/webmercator"
+	geom "github.com/flywave/go-geom"
+	gen "github.com/flywave/go-geom/general"
+
+	gvt "github.com/flywave/go-vector-tiler"
+	"github.com/flywave/go-vector-tiler/maths/webmercator"
 )
 
 // ApplyToPoints applys the given function to each point in the geometry and any sub geometries, return a new transformed geometry.
@@ -25,12 +27,12 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 		if len(c) < 2 {
 			return nil, fmt.Errorf("function did not return minimum number of coordinates got %v expected 2", len(c))
 		}
-		return geom.Point{c[0], c[1]}, nil
+		return gen.NewPoint(c), nil
 
 	case geom.MultiPoint:
-		pts := make(geom.MultiPoint, len(geo))
+		pts := geo.Data()
 
-		for i, pt := range geo {
+		for i, pt := range pts {
 			c, err := f(pt[:]...)
 			if err != nil {
 				return nil, err
@@ -40,11 +42,11 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 			}
 			pts[i][0], pts[i][1] = c[0], c[1]
 		}
-		return pts, nil
+		return gen.NewMultiPoint(pts), nil
 
 	case geom.LineString:
-		line := make(geom.LineString, len(geo))
-		for i, pt := range geo {
+		pts := geo.Data()
+		for i, pt := range pts {
 			c, err := f(pt[:]...)
 			if err != nil {
 				return nil, err
@@ -52,16 +54,16 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 			if len(c) < 2 {
 				return nil, fmt.Errorf("function did not return minimum number of coordinates got %v expected 2", len(c))
 			}
-			line[i][0], line[i][1] = c[0], c[1]
+			pts[i][0], pts[i][1] = c[0], c[1]
 		}
-		return line, nil
+		return gen.NewLineString(pts), nil
 
-	case geom.MultiLineString:
-		lines := make(geom.MultiLineString, len(geo))
+	case geom.MultiLine:
+		lines := geo.Data()
 
-		for i, line := range geo {
+		for i, line := range lines {
 			// getting a geometry interface back
-			linei, err := ApplyToPoints(geom.LineString(line), f)
+			linei, err := ApplyToPoints(gen.NewLineString(line), f)
 			if err != nil {
 				return nil, fmt.Errorf("got error converting line(%v) of multiline: %v", i, err)
 			}
@@ -72,16 +74,16 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 				panic("we did not get the conversion we were expecting")
 			}
 
-			lines[i] = linev
+			lines[i] = linev.Data()
 		}
-		return lines, nil
+		return gen.NewMultiLineString(lines), nil
 
 	case geom.Polygon:
-		poly := make(geom.Polygon, len(geo))
+		poly := geo.Data()
 
-		for i, line := range geo {
+		for i, line := range poly {
 			// getting a geometry inteface back
-			linei, err := ApplyToPoints(geom.LineString(line), f)
+			linei, err := ApplyToPoints(gen.NewLineString(line), f)
 			if err != nil {
 				return nil, fmt.Errorf("got error converting line(%v) of polygon: %v", i, err)
 			}
@@ -92,16 +94,16 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 				panic("we did not get the conversion we were expecting")
 			}
 
-			poly[i] = linev
+			poly[i] = linev.Data()
 		}
-		return poly, nil
+		return gen.NewPolygon(poly), nil
 
 	case geom.MultiPolygon:
-		mpoly := make(geom.MultiPolygon, len(geo))
+		mpoly := geo.Data()
 
-		for i, poly := range geo {
+		for i, poly := range mpoly {
 			// getting a geometry inteface back
-			polyi, err := ApplyToPoints(geom.Polygon(poly), f)
+			polyi, err := ApplyToPoints(gen.NewPolygon(poly), f)
 			if err != nil {
 				return nil, fmt.Errorf("got error converting poly(%v) of multipolygon: %v", i, err)
 			}
@@ -112,9 +114,9 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 				panic("we did not get the conversion we were expecting")
 			}
 
-			mpoly[i] = polyv
+			mpoly[i] = polyv.Data()
 		}
-		return mpoly, nil
+		return gen.NewMultiPolygon(mpoly), nil
 	}
 }
 
@@ -125,78 +127,27 @@ func CloneGeometry(geometry geom.Geometry) (geom.Geometry, error) {
 		return nil, fmt.Errorf("unknown Geometry: %T", geometry)
 
 	case geom.Point:
-		return geom.Point{geo.X(), geo.Y()}, nil
+		return gen.NewPoint(geo.Data()), nil
 
 	case geom.MultiPoint:
-		pts := make(geom.MultiPoint, len(geo))
-		for i, pt := range geo {
-			pts[i] = pt
-		}
-		return pts, nil
+
+		return gen.NewMultiPoint(geo.Data()), nil
 
 	case geom.LineString:
-		line := make(geom.LineString, len(geo))
-		for i, pt := range geo {
-			line[i] = pt
-		}
-		return line, nil
 
-	case geom.MultiLineString:
-		lines := make(geom.MultiLineString, len(geo))
-		for i, line := range geo {
-			// getting a geometry interface back
-			linei, err := CloneGeometry(geom.LineString(line))
-			if err != nil {
-				return nil, fmt.Errorf("got error converting line(%v) of multiline: %v", i, err)
-			}
+		return gen.NewLineString(geo.Data()), nil
 
-			// get the value
-			linev, ok := linei.(geom.LineString)
-			if !ok {
-				panic("we did not get the conversion we were expecting")
-			}
+	case geom.MultiLine:
 
-			lines[i] = linev
-		}
-		return lines, nil
+		return gen.NewMultiLineString(geo.Data()), nil
 
 	case geom.Polygon:
-		// getting a geometry inteface back
-		poly := make(geom.Polygon, len(geo))
-		for i, line := range geo {
-			linei, err := CloneGeometry(geom.LineString(line))
-			if err != nil {
-				return nil, fmt.Errorf("got error converting line(%v) of polygon: %v", i, err)
-			}
 
-			// get the value
-			linev, ok := linei.(geom.LineString)
-			if !ok {
-				panic("we did not get the conversion we were expecting")
-			}
-
-			poly[i] = linev
-		}
-		return poly, nil
+		return gen.NewPolygon(geo.Data()), nil
 
 	case geom.MultiPolygon:
-		mpoly := make(geom.MultiPolygon, len(geo))
-		for i, poly := range geo {
-			// getting a geometry inteface back
-			polyi, err := CloneGeometry(geom.Polygon(poly))
-			if err != nil {
-				return nil, fmt.Errorf("got error converting polygon(%v) of multipolygon: %v", i, err)
-			}
 
-			// get the value
-			polyv, ok := polyi.(geom.Polygon)
-			if !ok {
-				panic("we did not get the conversion we were expecting")
-			}
-
-			mpoly[i] = polyv
-		}
-		return mpoly, nil
+		return gen.NewMultiPolygon(geo.Data()), nil
 	}
 }
 
@@ -204,14 +155,14 @@ func CloneGeometry(geometry geom.Geometry) (geom.Geometry, error) {
 func ToWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
-		return nil, fmt.Errorf("don't know how to convert from %v to %v.", tegola.WebMercator, SRID)
-	case tegola.WebMercator:
+		return nil, fmt.Errorf("don't know how to convert from %v to %v.", gvt.WebMercator, SRID)
+	case gvt.WebMercator:
 		// Instead of just returning the geometry, we are cloning it so that the user of the API can rely
 		// on the result to alway be a copy. Instead of being a reference in the on instance that it's already
 		// in the same SRID.
 
 		return CloneGeometry(geometry)
-	case tegola.WGS84:
+	case gvt.WGS84:
 
 		return ApplyToPoints(geometry, webmercator.PToXY)
 	}
@@ -221,13 +172,13 @@ func ToWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 func FromWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
-		return nil, fmt.Errorf("don't know how to convert from %v to %v.", SRID, tegola.WebMercator)
-	case tegola.WebMercator:
+		return nil, fmt.Errorf("don't know how to convert from %v to %v.", SRID, gvt.WebMercator)
+	case gvt.WebMercator:
 		// Instead of just returning the geometry, we are cloning it so that the user of the API can rely
 		// on the result to alway be a copy. Instead of being a reference in the on instance that it's already
 		// in the same SRID.
 		return CloneGeometry(geometry)
-	case tegola.WGS84:
+	case gvt.WGS84:
 		return ApplyToPoints(geometry, webmercator.PToLonLat)
 	}
 }
