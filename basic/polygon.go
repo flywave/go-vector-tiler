@@ -2,16 +2,14 @@ package basic
 
 import (
 	geom "github.com/flywave/go-geom"
+
 	"github.com/flywave/go-vector-tiler/maths"
 )
 
-// Polygon describes a basic polygon; made up of multiple lines.
 type Polygon []Line
 
-// Just to make basic collection only usable with basic types.
 func (Polygon) basicType() {}
 
-// Sublines returns the lines that make up the polygon.
 func (p Polygon) Sublines() (slines []geom.LineString) {
 	slines = make([]geom.LineString, 0, len(p))
 	for i := range p {
@@ -33,13 +31,10 @@ func (p Polygon) Data() [][][]float64 {
 	return ps
 }
 
-// MultiPolygon describes a set of polygons.
 type MultiPolygon []Polygon
 
-// Just to make basic collection only usable with basic types.
 func (MultiPolygon) basicType() {}
 
-// Polygons returns the polygons that make up the set.
 func (mp MultiPolygon) Polygons() (polygons []geom.Polygon) {
 	polygons = make([]geom.Polygon, 0, len(mp))
 	for i := range mp {

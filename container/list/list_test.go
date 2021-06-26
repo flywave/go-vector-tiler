@@ -20,7 +20,6 @@ func checkListPointers(t *testing.T, desc string, l *List, es []*Element) {
 		return
 	}
 
-	// zero length lists must be the zero value or properly initialized (sentinel circle)
 	if len(es) == 0 {
 		if n, p := l.root.Next(), l.root.Prev(); (n != nil && n != root) ||
 			(p != nil && p != root) {
@@ -29,9 +28,6 @@ func checkListPointers(t *testing.T, desc string, l *List, es []*Element) {
 		return
 	}
 
-	// len(es) > 0
-
-	// check internal and external prev/ext connection
 	var ok bool
 	for i, e := range es {
 		prev := root
@@ -68,7 +64,6 @@ func TestList(t *testing.T) {
 	l := New()
 	checkListPointers(t, "Zero Element test on New List", l, []*Element{})
 
-	// Single element list
 	l.PushFront(e[0])
 	checkListPointers(t, "One element test", l, e[0:1])
 	l.MoveToFront(e[0])
@@ -78,7 +73,6 @@ func TestList(t *testing.T) {
 	l.Remove(e[0])
 	checkListPointers(t, "zero element after Remove", l, []*Element{})
 
-	// Bigger list
 	l.PushFront(e[2])
 	l.PushFront(e[1])
 	l.PushBack(e[3])
@@ -89,21 +83,21 @@ func TestList(t *testing.T) {
 	l.Remove(e[2])
 	checkListPointers(t, "3 element list after removing e2", l, []*Element{e[1], e[3], e[4]})
 
-	l.MoveToFront(e[3]) // Move from the middle
+	l.MoveToFront(e[3])
 	checkListPointers(t, "3 element move to front", l, []*Element{e[3], e[1], e[4]})
 
 	l.MoveToFront(e[1])
-	l.MoveToBack(e[3]) // Move from the middle
+	l.MoveToBack(e[3])
 	checkListPointers(t, "3 element list 1,4,3", l, []*Element{e[1], e[4], e[3]})
 
-	l.MoveToFront(e[3]) // Move from the back.
+	l.MoveToFront(e[3])
 	checkListPointers(t, "3 element list move 3 from back", l, []*Element{e[3], e[1], e[4]})
-	l.MoveToFront(e[3]) // Should be a no op.
+	l.MoveToFront(e[3])
 	checkListPointers(t, "3 element list move no-op", l, []*Element{e[3], e[1], e[4]})
 
-	l.MoveToBack(e[3]) // Move to the back.
+	l.MoveToBack(e[3])
 	checkListPointers(t, "3 element list move 3 from back", l, []*Element{e[1], e[4], e[3]})
-	l.MoveToBack(e[3]) // Should be a no op.
+	l.MoveToBack(e[3])
 	checkListPointers(t, "3 element list move no-op", l, []*Element{e[1], e[4], e[3]})
 
 	l.InsertBefore(e[2], e[1])
@@ -113,17 +107,16 @@ func TestList(t *testing.T) {
 	checkListPointers(t, "4 element inserted e2 before e4", l, []*Element{e[1], e[2], e[4], e[3]})
 	l.Remove(e[2])
 
-	l.InsertAfter(e[2], e[1]) // insert after front
+	l.InsertAfter(e[2], e[1])
 	checkListPointers(t, "4 element inserted e2 after e1", l, []*Element{e[1], e[2], e[4], e[3]})
 	l.Remove(e[2])
-	l.InsertAfter(e[2], e[4]) // insert after middle
+	l.InsertAfter(e[2], e[4])
 	checkListPointers(t, "4 element inserted e2 after e4", l, []*Element{e[1], e[4], e[2], e[3]})
 	l.Remove(e[2])
-	l.InsertAfter(e[2], e[3]) // insert after back
+	l.InsertAfter(e[2], e[3])
 	checkListPointers(t, "4 element inserted e2 after e3", l, []*Element{e[1], e[4], e[3], e[2]})
 	l.Remove(e[2])
 
-	// Check standard iteration.
 	sum := 0
 	for e := l.Front(); e != nil; e = e.Next() {
 		if elem, ok := e.(*Element); ok {
@@ -136,7 +129,6 @@ func TestList(t *testing.T) {
 		t.Errorf("sum over l = %d, want 4", sum)
 	}
 
-	// Clear all elements by iterating
 	var next Elementer
 	for e := l.Front(); e != nil; e = next {
 		next = e.Next()
@@ -193,7 +185,7 @@ func TestIssue4102(t *testing.T) {
 	l2.PushBack(e2[1])
 
 	ef1 := l1.Front()
-	l2.Remove(ef1) // l2 should not change because ef1 is not an element of l2
+	l2.Remove(ef1)
 	if n := l2.Len(); n != 2 {
 		t.Errorf("l2.Len() = %d, want 2", n)
 	}
@@ -238,9 +230,9 @@ func TestMove(t *testing.T) {
 	l.PushBack(e3)
 	l.PushBack(e4)
 
-	l.MoveAfter(e3, e3) // should be no-op
+	l.MoveAfter(e3, e3)
 	checkListPointers(t, "Check 4 element list", l, []*Element{e1, e2, e3, e4})
-	l.MoveBefore(e2, e2) // shold be a no-op
+	l.MoveBefore(e2, e2)
 	checkListPointers(t, "Check 4 element list no-op", l, []*Element{e1, e2, e3, e4})
 
 	l.MoveAfter(e3, e2)
@@ -266,7 +258,6 @@ func TestMove(t *testing.T) {
 
 }
 
-// Tst PushFront, PushBack with nil values and uninitialized list..
 func TestZeroList(t *testing.T) {
 	var l1 = new(List)
 	l1.PushFront(NewElement(1))
@@ -284,7 +275,6 @@ func TestZeroList(t *testing.T) {
 
 }
 
-// Test that a list l is not modified when calling InsertBefore with a mark that is not an element of the list.
 func TestInsertBeforeUnknownMark(t *testing.T) {
 	var l List
 	l.PushBack(NewElement(1))
@@ -294,7 +284,6 @@ func TestInsertBeforeUnknownMark(t *testing.T) {
 	checkList(t, "Check insert before unknown mark", &l, []int{1, 2, 3})
 }
 
-// Test that a list l is not modified when calling InsertAfter with a mark that is not an element of the list.
 func TestInsertAfterUnknownMark(t *testing.T) {
 	var l List
 	l.PushBack(NewElement(1))
@@ -304,7 +293,6 @@ func TestInsertAfterUnknownMark(t *testing.T) {
 	checkList(t, "Check insert after unknown mark", &l, []int{1, 2, 3})
 }
 
-// Test that a list l is not modified when calling InsertBefore or InsertAfter with a mark that is not an element of the list.
 func TestMoveUnknownMark(t *testing.T) {
 	var l1, l2 List
 

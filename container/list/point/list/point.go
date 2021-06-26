@@ -60,8 +60,6 @@ type List struct {
 	list.List
 }
 
-// ForEachPt will iterate forward through the list, call the fn for each pt.
-// If fn returns false, the iteration will stop.
 func (l *List) ForEachPt(fn func(idx int, pt maths.Pt) (cont bool)) {
 	for i, p := 0, l.Front(); p != nil; i, p = i+1, p.Next() {
 		pt := p.(maths.Pointer).Point()
@@ -90,27 +88,21 @@ func (l *List) PushInBetween(start, end ElementerPointer, element ElementerPoint
 	mpt := element.Point().Truncate()
 	{
 		line := maths.Line{spt, ept}
-		// Make sure the point is in between the starting and ending point.
 		if !line.InBetween(mpt) {
 			return false
 		}
 	}
 
-	// Need to figure out if points are increasing or decreasing in the x direction.
 	deltaX := ept.X - spt.X
 	deltaY := ept.Y - spt.Y
 	xIncreasing := deltaX > 0
 	yIncreasing := deltaY > 0
 
-	// fmt.Printf("// start:  mpt,ept %f,%f,%f,%f,%v\n", mpt.X, ept.X, mpt.Y, ept.Y, mpt.X == ept.X && mpt.Y == ept.Y)
-
-	// If it's equal to the end point, we will push it before the end point
 	if ept.IsEqual(mpt) {
 		l.InsertBefore(element, end)
 		return true
 	}
 
-	// If it's equal to the start point we need to push it after the start.
 	if spt.IsEqual(mpt) {
 		l.InsertAfter(element, start)
 		return true
@@ -121,7 +113,6 @@ func (l *List) PushInBetween(start, end ElementerPointer, element ElementerPoint
 		if ele, ok := e.(maths.Pointer); ok {
 			pt := ele.Point()
 
-			// There is not change in X when deltaX == 0; so it's always good.
 			if deltaX != 0 {
 				if xIncreasing {
 					goodX = int64(mpt.X) < int64(pt.X)
@@ -129,7 +120,6 @@ func (l *List) PushInBetween(start, end ElementerPointer, element ElementerPoint
 					goodX = int64(mpt.X) > int64(pt.X)
 				}
 			}
-			// There is no change in Y when deltaY == 0; so it's always good.
 			if deltaY != 0 {
 				if yIncreasing {
 					goodY = int64(mpt.Y) < int64(pt.Y)
@@ -142,7 +132,6 @@ func (l *List) PushInBetween(start, end ElementerPointer, element ElementerPoint
 
 		return false
 	})
-	// This should not happen?
 	if mark == nil {
 		l.InsertBefore(element, end)
 		return true

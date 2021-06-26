@@ -52,6 +52,7 @@ func (bb *bbox) Add(pts ...maths.Pt) {
 		}
 	}
 }
+
 func (bb *bbox) Coords() [4]float64 {
 	if bb == nil {
 		return [4]float64{}
@@ -83,7 +84,6 @@ func (se *segEvents) Add(l maths.Line) {
 	if se == nil {
 		return
 	}
-	// Skip dup points
 	var ev segEvent
 	if l[0].IsEqual(l[1]) {
 		return
@@ -122,15 +122,12 @@ func (se segEvents) Contains(pt maths.Pt) (ok bool) {
 			continue
 		}
 
-		//y1100, y2100 = int64(seg.events[i].y1*100), int64(seg.events[i].y2*100)
 		y1100, y2100 = se[i].y1, se[i].y2
 
-		// Horizontal line
 		if y1100 == y2100 {
 			if y100 == y1100 {
 				if se[i].x1 <= pt.X &&
 					pt.X <= se[i].x2 {
-					// if we are on the line return true.
 					return true
 				}
 				continue
@@ -138,21 +135,18 @@ func (se segEvents) Contains(pt maths.Pt) (ok bool) {
 		}
 
 		if y100 == y1100 && se[i].x1 < pt.X {
-			// We are going through a vertex.
 			if y2100 <= y100 {
 				count++
 			}
 			continue
 		}
 		if y100 == y2100 && se[i].x2 < pt.X {
-			// We are going through a vertex.
 			if y1100 <= y100 {
 				count++
 			}
 			continue
 		}
 
-		// the segment is verticle and the x is the same; the point is contained.
 		if !se[i].isMDefined && pt.X == se[i].x1 {
 			return true
 		}
@@ -162,8 +156,6 @@ func (se segEvents) Contains(pt maths.Pt) (ok bool) {
 			continue
 		}
 
-		// need to solve for y.
-		// y = mx + b
 		y = int64((se[i].m*pt.X + se[i].b) * 100)
 		if y == y100 {
 			return true
@@ -186,8 +178,6 @@ type Segment struct {
 }
 
 func (seg Segment) Contains(pt maths.Pt) bool {
-
-	// Check to make sure that the point is within the bounding box.
 	if !seg.bbox.Contains(pt) {
 		return false
 	}
@@ -231,6 +221,7 @@ func NewSegmentFromRing(label maths.Label, ring []maths.Pt) (seg Segment) {
 	sort.Sort(seg.events)
 	return seg
 }
+
 func NewSegmentFromLines(label maths.Label, lines []maths.Line) (seg Segment) {
 	seg.label = label
 	seg.events = make(segEvents, 0, len(lines))

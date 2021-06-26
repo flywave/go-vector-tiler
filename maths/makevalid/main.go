@@ -22,7 +22,6 @@ func init() {
 	numWorkers = runtime.NumCPU()
 }
 
-// insureConnected will add a connecting line as needed to the given polygons. If there is only one line in a polygon, it will be left alone.
 func insureConnected(polygons ...maths.MultiLine) (ret []maths.MultiLine) {
 	ret = make([]maths.MultiLine, len(polygons))
 	for i := range polygons {
@@ -41,36 +40,7 @@ func insureConnected(polygons ...maths.MultiLine) (ret []maths.MultiLine) {
 	return ret
 }
 
-/*
-func MaxF64(vals ...float64) (max float64) {
-	if len(vals) == 0 {
-		return 0
-	}
-	max = vals[0]
-	for _, f := range vals[1:] {
-		if f > max {
-			max = f
-		}
-	}
-	return max
-}
-func MinF64(vals ...float64) (min float64) {
-	if len(vals) == 0 {
-		return 0
-	}
-	min = vals[0]
-	for _, f := range vals[1:] {
-		if f < min {
-			min = f
-		}
-	}
-	return min
-}
-*/
-
-// destructure2  splits the polygon into a set of segements adding the segments of the clipbox as well.
 func destructure2(polygons []maths.MultiLine, clipbox *general.Extent) []maths.Line {
-	// First we need to combine all the segments.
 	segs := make(map[maths.Line]struct{})
 	for i := range polygons {
 		for _, ln := range polygons[i] {
@@ -79,9 +49,7 @@ func destructure2(polygons []maths.MultiLine, clipbox *general.Extent) []maths.L
 	}
 
 	var segments []maths.Line
-	// Add the clipbox segments to the set of segments.
 	if clipbox != nil {
-		// TODO (gdey): Take into accound the clockwise and counterclock wise direction?
 		edges := clipbox.Edges(nil)
 		lns := maths.NewLinesFloat64(edges[:]...)
 		for i := range lns {
@@ -245,7 +213,6 @@ func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *general.Extent
 			}
 			if clipbox != nil {
 				if xs[i] < clipbox.MinX() || xs[i] > clipbox.MaxX() {
-					// Skip working on this one.
 					continue
 				}
 				if xs[i+1] > clipbox.MaxX() {
@@ -302,12 +269,6 @@ func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *general.Extent
 }
 
 func MakeValid(ctx context.Context, hm hitmap.Interface, extent *general.Extent, plygs ...maths.MultiLine) (polygons []maths.Polygon, err error) {
-	/*
-		var bb *geom.BoundingBox
-		if extent != nil {
-			bb = geom.NewBBox(extent[0], extent[1])
-		}
-	*/
 	return destructure5(ctx, hm, extent, insureConnected(plygs...))
 }
 
@@ -383,7 +344,6 @@ func (r *ring) Add(ptslist []maths.Pt) (added bool) {
 	var ss, ee = r.r[0].IsEqual(ptslist[0]), r.r[r.end].IsEqual(ptslist[pend])
 	var es, se = r.r[r.end].IsEqual(ptslist[0]), r.r[0].IsEqual(ptslist[pend])
 
-	// First check to see if both end points match.
 	if ss && ee {
 		if pend-1 > 1 {
 			r.r = append(r.r, points.Reverse(ptslist[1:pend-1])...)
@@ -442,7 +402,7 @@ func (r *ring) Simplify() {
 			continue
 		}
 		sring = append(sring, r.r[lpt])
-		// Update bb values.
+
 		if r.r[lpt].X < r.bb[0] {
 			r.bb[0] = r.r[lpt].X
 		}
@@ -457,10 +417,9 @@ func (r *ring) Simplify() {
 		}
 		lpt = j
 	}
-	// Add the second to last element.
+
 	sring = append(sring, r.r[lpt])
 	if len(sring) < 4 {
-		// Don't do anything.
 		return
 	}
 	if sring[0].IsEqual(sring[len(sring)-1]) {
@@ -549,20 +508,16 @@ func constructPolygon(lns []maths.Line) (rpts [][]maths.Pt) {
 	lines := make([]maths.Line, len(lns))
 	for i := range lns {
 		lines[i] = maths.Line{
-			maths.Pt{
-				float64(int64(lns[i][0].X)),
-				float64(int64(lns[i][0].Y)),
+			maths.Pt{X: float64(int64(lns[i][0].X)),
+				Y: float64(int64(lns[i][0].Y)),
 			},
 			maths.Pt{
-				float64(int64(lns[i][1].X)),
-				float64(int64(lns[i][1].Y)),
+				X: float64(int64(lns[i][1].X)),
+				Y: float64(int64(lns[i][1].Y)),
 			},
 		}
 	}
 
-	// We sort the lines, for a couple of reasons.
-	// The first is because the smallest and largest lines are going to be part of the external ring.
-	// The second by sorting it moves lines that are connected closer together.
 	sort.Sort(maths.ByXYLine(lines))
 
 	var rings []*ring
@@ -577,13 +532,10 @@ NextLine:
 				continue NextLine
 			}
 		}
-		// Need to add it to a new ring.
 		rings = append(rings, newRing(lines[l][:]))
 	}
 
-	// Time to loop through the rings and see if any of them should be attached together.
 	for i := range rings[:len(rings)-1] {
-		// Only care about the open rings.
 		if rings[i] == nil || rings[i].Closed {
 			continue
 		}
@@ -593,19 +545,15 @@ NextLine:
 				continue
 			}
 			if rings[i].Add(rings[idx].r) {
-				// Close out the ring because it got added to ring[i]
 				rings[idx] = nil
 			}
 		}
 	}
 
-	// Need to simplify rings.
-
 	for _, ring := range rings {
 		ring.Simplify()
 		ring.ReOrder()
 	}
-	// Need to sort the rings by size. The largest ring by area needs to be the first ring.
 
 	sort.Sort(byArea(rings))
 	for i := range rings {
@@ -632,7 +580,6 @@ func (d dedupinp) Dedup() {
 	}
 	sort.Sort(d)
 
-	// Find the dups.
 	ba := make([][2]int, 0, len(d.A)/2)
 	var b [2]int
 	for i := 1; i < len(d.A); i++ {
@@ -650,7 +597,6 @@ func (d dedupinp) Dedup() {
 		ba = append(ba, b)
 	}
 
-	// ba has the dups. Need to remove them from the index array.
 	for i := len(ba) - 1; i >= 0; i-- {
 		switch {
 		case ba[i][0] == 0:

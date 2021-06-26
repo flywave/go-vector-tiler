@@ -47,8 +47,6 @@ func TestSegmentLinesContains(t *testing.T) {
 				ucpt(3, 0), ucpt(7, 0), ucpt(2, 6),
 			},
 		},
-		// omb49G09l03lv$"ay'bo"0pVj@a
-		// :s/1,/20,/g$o02j
 		testcase{
 			desc: "Complicated shape. (20x20)",
 			lines: lines(

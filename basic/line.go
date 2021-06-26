@@ -7,12 +7,8 @@ import (
 	"github.com/flywave/go-vector-tiler/maths"
 )
 
-// Line is a basic line type which is made up of two or more points that don't
-// intersect.
-// TODO: We don't really check to make sure the points don't intersect.
 type Line []Point
 
-// Just to make basic collection only usable with basic types.
 func (Line) basicType()                      {}
 func (Line) String() string                  { return "Line" }
 func (l Line) Direction() maths.WindingOrder { return maths.WindingOrderOfLine(l) }
@@ -33,7 +29,6 @@ func (l Line) Data() [][]float64 {
 	return ps
 }
 
-// TODO: gdey remove this function when we have moved over to geomLinestring.
 func (l Line) AsGeomLineString() (ln [][]float64) {
 	for i := range l {
 		ln = append(ln, []float64{l[i].X(), l[i].Y()})
@@ -41,11 +36,9 @@ func (l Line) AsGeomLineString() (ln [][]float64) {
 	return ln
 }
 
-// Contains tells you weather the given point is contained by the Linestring.
-// This assumes the linestring is a connected linestring.
 func (l Line) Contains(pt Point) bool {
 	pt0 := l[len(l)-1]
-	ptln := maths.Line{pt.AsPt(), maths.Pt{pt.X() + 1, pt.Y()}}
+	ptln := maths.Line{pt.AsPt(), maths.Pt{X: pt.X() + 1, Y: pt.Y()}}
 	count := 0
 	for _, pt1 := range l {
 		ln := maths.Line{pt0.AsPt(), pt1.AsPt()}
@@ -71,7 +64,6 @@ func (l Line) ContainsLine(ln Line) bool {
 	return true
 }
 
-// NewLine creates a line given pairs for floats.
 func NewLine(pointPairs ...float64) Line {
 	var line Line
 	if (len(pointPairs) % 2) != 0 {
@@ -114,7 +106,6 @@ func NewLineFrom2Float64(points ...[]float64) (l Line) {
 	return l
 }
 
-// Subpoints return the points in a line.
 func (l Line) Subpoints() (points []geom.Point) {
 	points = make([]geom.Point, 0, len(l))
 	for i := range l {
@@ -123,7 +114,6 @@ func (l Line) Subpoints() (points []geom.Point) {
 	return points
 }
 
-// MultiLine is a set of lines.
 type MultiLine []Line
 
 func NewMultiLine(pointPairLines ...[]float64) (ml MultiLine) {
@@ -145,10 +135,8 @@ func (l MultiLine) Data() [][][]float64 {
 	return ps
 }
 
-// Just to make basic collection only usable with basic types.
 func (MultiLine) basicType() {}
 
-// Lines are the lines in a Multiline
 func (ml MultiLine) Lines() (lines []geom.LineString) {
 	lines = make([]geom.LineString, 0, len(ml))
 	for i := range ml {

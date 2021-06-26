@@ -8,6 +8,7 @@ import (
 const DefaultPointFormat = "{%06f,%06f}, "
 
 func DefaultPointDecorator(pt Point) string { return fmt.Sprintf(DefaultPointFormat, pt[0], pt[1]) }
+
 func (l Line) GoStringTypeDecorated(withType bool, indent int, lineComment string, pointDecorator func(pt Point) string) string {
 	const (
 		numberOfPointsPerLine = 10
@@ -44,6 +45,7 @@ func (l Line) GoStringTypeDecorated(withType bool, indent int, lineComment strin
 
 	return fmt.Sprintf(lineFormat, indentString, typeName, len(l), l.Direction(), lineComment, string(bytestr), indentString)
 }
+
 func (l Line) GoStringTyped(withType bool, indent int, lineComment string) string {
 	return l.GoStringTypeDecorated(withType, indent, lineComment, nil)
 }
@@ -65,9 +67,11 @@ func (p Polygon) GoStringTypeDecorated(withType bool, indent int, lineComment st
 	}
 	return fmt.Sprintf(polygonFormat, indentString, typeName, len(p), lineComment, lines, indentString)
 }
+
 func (p Polygon) GoStringTyped(withType bool, indent int, lineComment string) string {
 	return p.GoStringTypeDecorated(withType, indent, lineComment, nil)
 }
+
 func (p Polygon) GoString() string { return p.GoStringTyped(true, 0, "") }
 
 func (p MultiPolygon) GoStringTyped(withType bool, indent int, lineComment string) string {
@@ -85,4 +89,5 @@ func (p MultiPolygon) GoStringTyped(withType bool, indent int, lineComment strin
 	}
 	return fmt.Sprintf(polygonFormat, indentString, typeName, len(p), lineComment, polygons, indentString)
 }
+
 func (p MultiPolygon) GoString() string { return p.GoStringTyped(true, 0, "") }

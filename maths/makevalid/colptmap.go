@@ -33,10 +33,8 @@ func (cm *colPtMap) add2Map(p1, p2 maths.Pt) {
 	cm.X2Pt[p1.X] = append(cm.X2Pt[p1.X], p1)
 	cm.X2Pt[p2.X] = append(cm.X2Pt[p2.X], p2)
 	if p1.X == p2.X {
-		// Nothing more to do.
 		return
 	}
-	// Make sure the p1 is to the left of p2
 	p1, p2 = orderPoints(p1, p2)
 	oldy100, ok := cm.Pt2MaxY[p1]
 	y100 := cm.maxY100Val(p2.Y)

@@ -29,7 +29,7 @@ func (canvas *Canvas) DrawPoint(x, y int, fill string) {
 func drawGrid(canvas *Canvas, mm *MinMax, n int, label bool, id, style, pointstyle, ostyle string) {
 	x, y, w, h := int(mm.MinX), int(mm.MinY), int(mm.Width()), int(mm.Height())
 	canvas.Group(fmt.Sprintf(`id="%v"`, id), fmt.Sprintf(`style="%v"`, style))
-	// Draw all the horizontal and vertical lines.
+
 	for i := x; i < x+w; i += n {
 		canvas.Line(i, y, i, y+h)
 	}
@@ -98,7 +98,7 @@ func (canvas *Canvas) DrawPolygon(p geom.Polygon, id string, style string, point
 			continue
 		}
 		idx := len(pts)
-		// If the first and last point is the same skipp the last point.
+
 		if pts[0].X() == pts[idx-1].X() && pts[0].Y() == pts[idx-1].Y() {
 			idx = len(pts) - 1
 		}

@@ -28,7 +28,6 @@ func checkListPointers(t *testing.T, desc string, l *List, es []*Pt) {
 	}
 	var didError bool
 
-	// check internal and external prev/ext connection
 	for i, e := range es {
 		var Next, Prev *Pt
 		if i > 0 {
@@ -96,78 +95,53 @@ func TestPushInBetween(t *testing.T) {
 	tests := tbltest.Cases(
 		testcase{
 			"Simple two point(3,1), after 1,1.",
-			maths.Pt{3, 1},
+			maths.Pt{X: 3, Y: 1},
 			[]maths.Pt{
-				{1, 1},
-				{4, 1},
+				{X: 1, Y: 1},
+				{X: 4, Y: 1},
 			},
 			1,
 		},
 		testcase{
 			"Simple three point(3,1), after 2,1.",
-			maths.Pt{3, 1},
+			maths.Pt{X: 3, Y: 1},
 			[]maths.Pt{
-				{1, 1},
-				{2, 1},
-				{4, 1},
+				{X: 1, Y: 1},
+				{X: 2, Y: 1},
+				{X: 4, Y: 1},
 			},
 			2,
 		},
 		testcase{
 			"Simple three point(-1,1), Not included.",
-			maths.Pt{-1, 1},
+			maths.Pt{X: -1, Y: 1},
 			[]maths.Pt{
-				{1, 1},
-				{2, 1},
-				{4, 1},
+				{X: 1, Y: 1},
+				{X: 2, Y: 1},
+				{X: 4, Y: 1},
 			},
 			-1,
 		},
-		/*TODO: gdey — Fix this case.
-		testcase{
-			"Simple three point(5,1), Not included.",
-			maths.Pt{4, 1},
-			[]maths.Pt{
-				maths.Pt{1, 1},
-				maths.Pt{2, 1},
-				maths.Pt{4, 1},
-			},
-			3,
-		},
-		*/
 		testcase{
 			"Dup three point(1,1), after 1,1.",
-			maths.Pt{1, 1},
+			maths.Pt{X: 1, Y: 1},
 			[]maths.Pt{
-				{1, 1},
-				{2, 1},
-				{4, 1},
+				{X: 1, Y: 1},
+				{X: 2, Y: 1},
+				{X: 4, Y: 1},
 			},
 			1,
 		},
 		testcase{
 			"Dup three point(2,1), after 2,1.",
-			maths.Pt{2, 1},
+			maths.Pt{X: 2, Y: 1},
 			[]maths.Pt{
-				{1, 1},
-				{2, 1},
-				{4, 1},
+				{X: 1, Y: 1},
+				{X: 2, Y: 1},
+				{X: 4, Y: 1},
 			},
 			2,
 		},
-		/*TODO: gdey — Fix this case.
-		testcase{
-			"Dup three point(4,1), after 2,1.",
-			maths.Pt{4, 1},
-			[]maths.Pt{
-				maths.Pt{1, 1},
-				maths.Pt{2, 1},
-				maths.Pt{4, 1},
-			},
-			3,
-		},
-		*/
-
 	)
 	tests.Run(func(idx int, test testcase) {
 		checkListInBetween(t, test.desc, test.insertPt, test.pos, test.pointList...)

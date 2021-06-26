@@ -110,5 +110,4 @@ func (se segEventsY) Contains(pt maths.Pt) bool {
 		}
 	}
 	return count%2 != 0
-
 }

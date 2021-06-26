@@ -154,9 +154,9 @@ func hitpoint(pt1, pt2, pt3 maths.Pt) maths.Pt {
 	tri := maths.Triangle{pt1, pt2, pt3}
 	sort.Sort(&tri)
 	if tri[0].X == tri[1].X {
-		return maths.Pt{tri[0].X + 1, float64(int64((tri[0].Y - tri[1].Y) / 2))}
+		return maths.Pt{X: tri[0].X + 1, Y: float64(int64((tri[0].Y - tri[1].Y) / 2))}
 	}
-	return maths.Pt{tri[1].X - 1, float64(int64((tri[0].Y - tri[1].Y) / 2))}
+	return maths.Pt{X: tri[1].X - 1, Y: float64(int64((tri[0].Y - tri[1].Y) / 2))}
 
 }
 func (rc *RingCol) addPts(hm hitmap.Interface, b *Builder, pts1, pts2 []maths.Pt) {
@@ -389,17 +389,8 @@ func (rc *RingCol) MultiPolygon() [][][]maths.Pt {
 
 type tri [4]int
 
-// getTriangle tries to return a set of triangles in the col1 and col2, it returns the indexs of of the columns where it stopped.
-// Col1idx will be 0 or 1, whereas col2idx could be greater then 1.
 func getTriangles(pt2maxy map[maths.Pt]int64, col1, col2 []maths.Pt) (tris []tri, col1idx int, col2idx int, err error) {
-
-	/*
-		defer func() {
-			log.Println("returning: ", "\ncol1  :", col1, "\ncol2  :", col2, "\nvalues:", tris, col1idx, col2idx, err)
-		}()
-	*/
 	clen1, clen2 := len(col1), len(col2)
-	// Check that we have four points to work with.
 	switch {
 	case clen1 == 0 || clen2 == 0:
 		return nil, 0, 0, ColLenghtErr
@@ -458,24 +449,17 @@ func getTriangles(pt2maxy map[maths.Pt]int64, col1, col2 []maths.Pt) (tris []tri
 	//   |    \|
 	// 2 +     + 2
 
-	// First thing we have to do is find a point in col2 that the maxy maps to, or the last point.
-	// As we look for the points, we will generate triangles along the line.
-	// Now we need to locate the point on col2 who's y is greater then the ymax.
-	// We will always add Triangle{col1[0],col2[0],col2[1]}
 	idx := 1
 	for ; idx <= len(col2) && int64(col2[idx].Y*100) < maxy; idx++ {
 		tris = append(tris, tri{0, 1, idx - 1, 2})
 	}
-	// Add the final triangle.
 	tris = append(tris, tri{0, 1, idx - 1, 2}, tri{0, 2, idx, 1})
 	return tris, 1, idx, nil
 }
 
 func _getTrianglesForCol(ctx context.Context, pt2maxy map[maths.Pt]int64, col1, col2 []maths.Pt) (tris []tri, err error) {
-	// Get all the triangles
 	i := 0
 	for j := 0; j < len(col2); {
-		// Context cancelled.
 		if ctx.Err() != nil {
 			return nil, context.Canceled
 		}
@@ -494,38 +478,22 @@ func _getTrianglesForCol(ctx context.Context, pt2maxy map[maths.Pt]int64, col1, 
 	return tris, nil
 }
 
-// TODO: Gdey have this return and error.
 func BuildRingCol(ctx context.Context, hm hitmap.Interface, col1, col2 []maths.Pt, pt2my map[maths.Pt]int64) (col RingCol, err error) {
 	var len1, len2 = len(col1), len(col2)
 	_, _ = len1, len2
 
 	var b Builder
 
-	// Get all the triangles
 	tris, err := _getTrianglesForCol(ctx, pt2my, col1, col2)
 	if err != nil {
 		return col, err
 	}
-	/*
-		if err != nil {
-			switch err {
-			case context.Canceled:
-				return col
-			default:
-				log.Println("Got error (", err, ") trying to process ", col1, col2, pt2my)
-				panic(err)
-			}
-		}
-	*/
 	for _, t := range tris {
 		col.addPts(hm, &b, col1[t[0]:t[0]+t[1]], col2[t[2]:t[2]+t[3]])
 	}
 
-	// We need to check if there is one last ring in the builder.
 	ring, x1, y1s, x2, y2s := b.CurrentRing()
 	if len(ring.Points) == 0 {
-		// We did not find any rings that were marked as inside
-		// We don't care about these rings.
 		if !col.foundInside {
 			col.Rings = nil
 		}
@@ -545,7 +513,6 @@ func BuildRingCol(ctx context.Context, hm hitmap.Interface, col1, col2 []maths.P
 	if !col.foundInside {
 		col.Rings = nil
 	}
-	// Context cancelled.
 	if ctx.Err() != nil {
 		return col, ctx.Err()
 	}
@@ -555,7 +522,6 @@ func BuildRingCol(ctx context.Context, hm hitmap.Interface, col1, col2 []maths.P
 }
 
 func slopeCheck(pt1, pt2, pt3 maths.Pt, x1, x2 float64) bool {
-	// if vertical can not do it.
 	if pt1.X == x1 && pt2.X == x2 && pt3.X == x2 {
 		return false
 	}
@@ -570,7 +536,6 @@ func slopeCheck(pt1, pt2, pt3 maths.Pt, x1, x2 float64) bool {
 
 func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 	seenRings := make(map[[2]int]bool)
-	//var skipNextCol bool
 	xc := c1.X2
 	cols := [2]RingCol{c1, c2}
 
@@ -588,7 +553,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 
 	var ringsToProcess [][2]int
 
-	// First we are going to loop through y2 of col zero and take notes of the rings.
 	for i := range c1.Y2s {
 		for _, d := range c1.Y2s[i].Descs {
 			if _, ok := seenRings[[2]int{0, d.Idx}]; ok {
@@ -598,10 +562,8 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			ringsToProcess = append(ringsToProcess, [2]int{0, d.Idx})
 		}
 	}
-	// Go through the rings that torch the Y1 edge only and add them to our list of rings.
 	for i := range c1.Y1s {
 		for _, d := range c1.Y1s[i].Descs {
-			// Skip any rings that are touching Y2 as well.
 			if _, ok := seenRings[[2]int{0, d.Idx}]; ok {
 				continue
 			}
@@ -609,7 +571,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			col.Rings = append(col.Rings, c1.Rings[d.Idx])
 		}
 	}
-	// Add rings that do not touch either edge to our col's rings list.
 	for i := range c1.Rings {
 		if _, ok := seenRings[[2]int{0, i}]; ok {
 			continue
@@ -617,9 +578,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 		col.Rings = append(col.Rings, c1.Rings[i])
 	}
 
-	// Now we need to do the same thing for col one.
-
-	// Next we are going to loop through y1 of col one and take notes of the rings.
 	for i := range c2.Y1s {
 		for _, d := range c2.Y1s[i].Descs {
 			if _, ok := seenRings[[2]int{1, d.Idx}]; ok {
@@ -629,10 +587,8 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			ringsToProcess = append(ringsToProcess, [2]int{1, d.Idx})
 		}
 	}
-	// Now we want to go through our Y2s and add those polygons to our polygon list and update col.Y2.
 	for i := range c2.Y2s {
 		for _, d := range c2.Y2s[i].Descs {
-			// Skip any rings that are touching Y2 as well.
 			if _, ok := seenRings[[2]int{1, d.Idx}]; ok {
 				continue
 			}
@@ -640,7 +596,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			col.Rings = append(col.Rings, c2.Rings[d.Idx])
 		}
 	}
-	// Now go through the c1 to find and add the rings that don't touch the sides.
 	for i := range c2.Rings {
 		if _, ok := seenRings[[2]int{1, i}]; ok {
 			continue
@@ -654,7 +609,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 
 		c, r := ringsToProcess[p][0], ringsToProcess[p][1]
 		if seenRings[[2]int{c, r}] {
-			// It's been processed; skip.
 			continue
 		}
 		seenRings[[2]int{c, r}] = true
@@ -679,7 +633,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			etime := time.Now()
 			elapsed := etime.Sub(stime)
 			if elapsed.Minutes() > 10 {
-				//if elapsed.Seconds() > 1 {
 				fn := genWriteoutCols(c1, c2)
 				log.Println("Taking too long, writing file to ", fn)
 
@@ -704,16 +657,12 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			}
 
 			if idx, ok := ptmap[pt]; ok {
-				// Need to remove the bubble.
-				// need to delete the points from the ptmap first.
 				for _, pt1 := range nring.Points[idx:] {
 					delete(ptmap, pt1)
 				}
 				nring.Points = nring.Points[:idx]
 			}
 			if len(nring.Points) > 1 && slopeCheck(nring.Points[len(nring.Points)-2], nring.Points[len(nring.Points)-1], pt, xc, xc) {
-				// have the same slope and not vertical
-				// can override last point.
 				delete(ptmap, nring.Points[len(nring.Points)-1])
 				nring.Points[len(nring.Points)-1] = pt
 			} else {
@@ -728,48 +677,39 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 				if l != nring.Label {
 					return true
 				}
-				// We have found our canidate. Need to switch over to it.
 
 				ocri := cri
 				ptid = pidx
 				nptid = ptid + 1
-				// swap columns
+
 				ccoli, ocoli = ocoli, ccoli
 				cri = idx
 				if nptid >= len(cols[ccoli].Rings[cri].Points) {
 					nptid = 0
 				}
-				//log.Println("Marking Ring as seen", ccoli, idx)
 				seenRings[[2]int{ccoli, idx}] = true
 				walkedRings = append(walkedRings, [2]int{ccoli, idx})
 				cols[ccoli].Rings[cri].Extent()
-				// don't continue searching.
-				// Let's check the other column real quick with the new edge.
+
 				pt := cols[ccoli].Rings[cri].Points[ptid]
 				npt := cols[ccoli].Rings[cri].Points[nptid]
 				ptcounter[pt]++
-				// This is not an edge.
+
 				if npt.X != pt.X {
 					return false
 				}
-				//log.Println("Searching other col for edge.", ocoli, pt.Y, npt.Y)
 
 				searchCol(ocoli, pt.Y, npt.Y, func(idx int, pidx int, l maths.Label) bool {
 					if l != nring.Label {
 						return true
 					}
-					// Don't want this polygon.
 					if idx == ocri {
 						return true
 					}
-					// We have found our canidate. Need to switch over to it.
-					// log.Println("Found edge (", pt, "-", npt, ") in our col", ocoli, idx, pidx)
 					ptid = pidx
 					nptid = ptid + 1
-					// swap columns
 					ccoli, ocoli = ocoli, ccoli
 					cri = idx
-					//log.Println("Marking Ring as seen", ccoli, idx)
 					seenRings[[2]int{ccoli, idx}] = true
 					walkedRings = append(walkedRings, [2]int{ccoli, idx})
 					cols[ccoli].Rings[cri].Extent()
@@ -783,7 +723,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			})
 
 		NextPoint:
-			// Move to the next point
 			ptid, nptid = nptid, nptid+1
 			if nptid >= len(cols[ccoli].Rings[cri].Points) {
 				nptid = 0
@@ -797,10 +736,8 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 		plen := len(nring.Points)
 		if plen > 3 {
 			switch {
-			// Let's check the second to last pt, last pt, and the first pt to see if the last point can be dropped.
 			case slopeCheck(nring.Points[plen-2], nring.Points[plen-1], nring.Points[0], col.X1, col.X2):
 				nring.Points = nring.Points[:plen-1]
-				// Let's check the  last pt, and the first two pts to see if the first point can be dropped.
 			case slopeCheck(nring.Points[plen-1], nring.Points[0], nring.Points[1], col.X1, col.X2):
 				nring.Points = nring.Points[1:]
 			}
@@ -816,7 +753,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 		col.Rings = append(col.Rings, nring)
 
 	}
-	// Calculate out our indexs.
 	for i, r := range col.Rings {
 		for j, pt := range r.Points {
 			switch pt.X {
@@ -827,13 +763,11 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			}
 		}
 	}
-	// Need to sort the Y's from top to bottom.
 	sort.Sort(EdgeByY(col.Y1s))
 	sort.Sort(EdgeByY(col.Y2s))
 
-	// Verify that the cols indexes are pointed correctly.
 	for i := range col.Y1s {
-		cpt := maths.Pt{col.X1, col.Y1s[i].Y}
+		cpt := maths.Pt{X: col.X1, Y: col.Y1s[i].Y}
 		for j, d := range col.Y1s[i].Descs {
 			ring := col.Rings[d.Idx]
 			if d.Label != ring.Label {
@@ -842,7 +776,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 
 			pt := ring.Points[d.PtIdx]
 			if !cpt.IsEqual(pt) {
-				// loop through the ring, and find the correct id.
 				var found bool
 				for r := range ring.Points {
 					if cpt.IsEqual(ring.Points[r]) {
@@ -862,7 +795,7 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 
 	}
 	for i := range col.Y2s {
-		cpt := maths.Pt{col.X2, col.Y2s[i].Y}
+		cpt := maths.Pt{X: col.X2, Y: col.Y2s[i].Y}
 		for j, d := range col.Y2s[i].Descs {
 			ring := col.Rings[d.Idx]
 			if d.Label != ring.Label {
@@ -870,7 +803,6 @@ func merge2AdjectRC(c1, c2 RingCol) (col RingCol) {
 			}
 			pt := ring.Points[d.PtIdx]
 			if !cpt.IsEqual(pt) {
-				// loop through the ring, and find the correct id.
 				var found bool
 				for r := range ring.Points {
 					if cpt.IsEqual(ring.Points[r]) {
@@ -925,7 +857,6 @@ func GenerateMultiPolygon(cols []RingCol) (plys []maths.Polygon) {
 	for i := range cols {
 		if len(cols[i].Rings) == 0 {
 			if li != -1 {
-				// We need to do some work.
 				wChan <- [2]int{li, i}
 				li = -1
 			}
@@ -1003,7 +934,7 @@ func writeOutSVG(fn string, cols []RingCol, onlyRings [][2]int) {
 	}
 
 	canvas.Scale(1.5)
-	// Draw the X1,X2, X2 lines
+
 	canvas.Line(int(cols[0].X1), -20, int(cols[0].X1), 4126, "stroke:#8a8a8a")
 	canvas.Line(int(cols[0].X2), -20, int(cols[0].X2), 4126, "stroke:#8a8a8a")
 	canvas.Line(int(cols[1].X2), -20, int(cols[1].X2), 4126, "stroke:#8a8a8a")

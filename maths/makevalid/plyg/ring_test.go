@@ -70,8 +70,8 @@ func TestBuildRingCol(t *testing.T) {
 			testYs: true,
 			hm:     hitmap.AllwaysInside,
 			icols: [2][]maths.Pt{
-				{{0, 0}, {0, 1}},
-				{{1, 0}, {1, 1}},
+				{{X: 0, Y: 0}, {X: 0, Y: 1}},
+				{{X: 1, Y: 0}, {X: 1, Y: 1}},
 			},
 			pt2my: map[maths.Pt]int64{},
 			Col: RingCol{
@@ -80,7 +80,7 @@ func TestBuildRingCol(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 0}, {1, 0}, {1, 1}, {0, 1}},
+						Points: []maths.Pt{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1}},
 					},
 				},
 				Y1s: []YEdge{
@@ -109,11 +109,11 @@ func TestBuildRingCol(t *testing.T) {
 			desc: "Simple Rectangle with constrined rightward line.",
 			hm:   hitmap.AllwaysInside,
 			icols: [2][]maths.Pt{
-				{{0, 0}, {0, 1}},
-				{{1, 0}, {1, 1}},
+				{{X: 0, Y: 0}, {X: 0, Y: 1}},
+				{{X: 1, Y: 0}, {X: 1, Y: 1}},
 			},
 			pt2my: map[maths.Pt]int64{
-				{0, 0}: 100,
+				{X: 0, Y: 0}: 100,
 			},
 			Col: RingCol{
 				X1: 0,
@@ -121,7 +121,7 @@ func TestBuildRingCol(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 0}, {1, 0}, {1, 1}, {0, 1}},
+						Points: []maths.Pt{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1}},
 					},
 				},
 			},
@@ -130,11 +130,11 @@ func TestBuildRingCol(t *testing.T) {
 			desc: "Simple Rectangle with constrined rightward line 1.",
 			hm:   hitmap.AllwaysInside,
 			icols: [2][]maths.Pt{
-				{{1, 0}, {1, 1}},
-				{{2, 0}, {2, 1}},
+				{{X: 1, Y: 0}, {X: 1, Y: 1}},
+				{{X: 2, Y: 0}, {X: 2, Y: 1}},
 			},
 			pt2my: map[maths.Pt]int64{
-				{1, 0}: 100,
+				{X: 1, Y: 0}: 100,
 			},
 			Col: RingCol{
 				X1: 1,
@@ -142,7 +142,7 @@ func TestBuildRingCol(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{1, 0}, {2, 0}, {2, 1}, {1, 1}},
+						Points: []maths.Pt{{X: 1, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 1, Y: 1}},
 					},
 				},
 			},
@@ -151,14 +151,14 @@ func TestBuildRingCol(t *testing.T) {
 			desc: "Empty column (all outside) should be empty",
 			hm:   new(hitmap.M), // Everything will be marked as outside
 			icols: [2][]maths.Pt{
-				{{0, 0}, {0, 1}, {0, 8}, {0, 9}},
-				{{1, 0}, {1, 1}, {1, 2}, {1, 4}, {1, 5}, {1, 7}, {1, 8}, {1, 9}},
+				{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 8}, {X: 0, Y: 9}},
+				{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 4}, {X: 1, Y: 5}, {X: 1, Y: 7}, {X: 1, Y: 8}, {X: 1, Y: 9}},
 			},
 			pt2my: map[maths.Pt]int64{
-				{0, 0}: 0,
-				{0, 1}: 100,
-				{0, 8}: 800,
-				{0, 9}: 900,
+				{X: 0, Y: 0}: 0,
+				{X: 0, Y: 1}: 100,
+				{X: 0, Y: 8}: 800,
+				{X: 0, Y: 9}: 900,
 			},
 			Col: RingCol{
 				X1: 0,
@@ -168,19 +168,19 @@ func TestBuildRingCol(t *testing.T) {
 		testcase{
 			desc: "Number Eight col 0",
 			hm: new(hitmap.M).AppendSegment(
-				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{0, 1}, {4, 1}, {4, 8}, {0, 8}}),
-				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{1, 2}, {3, 2}, {3, 4}, {1, 4}}),
-				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{1, 5}, {3, 5}, {3, 7}, {1, 7}}),
+				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{X: 0, Y: 1}, {X: 4, Y: 1}, {X: 4, Y: 8}, {X: 0, Y: 8}}),
+				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{X: 1, Y: 2}, {X: 3, Y: 2}, {X: 3, Y: 4}, {X: 1, Y: 4}}),
+				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{X: 1, Y: 5}, {X: 3, Y: 5}, {X: 3, Y: 7}, {X: 1, Y: 7}}),
 			),
 			icols: [2][]maths.Pt{
-				{{0, 0}, {0, 1}, {0, 8}, {0, 9}},
-				{{1, 0}, {1, 1}, {1, 2}, {1, 4}, {1, 5}, {1, 7}, {1, 8}, {1, 9}},
+				{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 8}, {X: 0, Y: 9}},
+				{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 4}, {X: 1, Y: 5}, {X: 1, Y: 7}, {X: 1, Y: 8}, {X: 1, Y: 9}},
 			},
 			pt2my: map[maths.Pt]int64{
-				{0, 0}: 0,
-				{0, 1}: 100,
-				{0, 8}: 800,
-				{0, 9}: 900,
+				{X: 0, Y: 0}: 0,
+				{X: 0, Y: 1}: 100,
+				{X: 0, Y: 8}: 800,
+				{X: 0, Y: 9}: 900,
 			},
 			Col: RingCol{
 				X1: 0,
@@ -188,15 +188,15 @@ func TestBuildRingCol(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{0, 0}, {1, 0}, {1, 1}, {0, 1}},
+						Points: []maths.Pt{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1}},
 					},
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 1}, {1, 1}, {1, 2}, {1, 4}, {1, 5}, {1, 7}, {1, 8}, {0, 8}},
+						Points: []maths.Pt{{X: 0, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 4}, {X: 1, Y: 5}, {X: 1, Y: 7}, {X: 1, Y: 8}, {X: 0, Y: 8}},
 					},
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{0, 8}, {1, 8}, {1, 9}, {0, 9}},
+						Points: []maths.Pt{{X: 0, Y: 8}, {X: 1, Y: 8}, {X: 1, Y: 9}, {X: 0, Y: 9}},
 					},
 				},
 			},
@@ -204,7 +204,6 @@ func TestBuildRingCol(t *testing.T) {
 	)
 	tests.Run(func(idx int, test testcase) {
 		t.Logf("Running %v (%v)", idx, test.desc)
-		//TODO: gdey — rewite tests to include err value, and not assume only happy paths.
 		col1, err := BuildRingCol(context.Background(), test.hm, test.icols[0], test.icols[1], test.pt2my)
 		if err != nil {
 			panic(fmt.Sprintf("Bad test %v got err building ring column: %v", idx, err))
@@ -226,28 +225,26 @@ func TestMerge2AdjecentRings(t *testing.T) {
 		testYs bool
 		Col    RingCol
 	}
-	// cases {{{1
 	tests := tbltest.Cases(
-		// Case Simple 2 {{{2
 		testcase{
 			desc: "Simple 2 Rectangle merge",
 			hm:   hitmap.AllwaysInside,
 			icols: [2][2][]maths.Pt{
 				{
-					{{0, 0}, {0, 1}},
-					{{1, 0}, {1, 1}},
+					{{X: 0, Y: 0}, {X: 0, Y: 1}},
+					{{X: 1, Y: 0}, {X: 1, Y: 1}},
 				},
 				{
-					{{1, 0}, {1, 1}},
-					{{2, 0}, {2, 1}},
+					{{X: 1, Y: 0}, {X: 1, Y: 1}},
+					{{X: 2, Y: 0}, {X: 2, Y: 1}},
 				},
 			},
 			pt2my: [2]map[maths.Pt]int64{
 				{
-					{0, 0}: 100,
+					{X: 0, Y: 0}: 100,
 				},
 				{
-					{1, 0}: 100,
+					{X: 1, Y: 0}: 100,
 				},
 			},
 			testYs: true,
@@ -257,7 +254,7 @@ func TestMerge2AdjecentRings(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 0}, {2, 0}, {2, 1}, {0, 1}},
+						Points: []maths.Pt{{X: 0, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 0, Y: 1}},
 					},
 				},
 				Y1s: []YEdge{
@@ -286,25 +283,25 @@ func TestMerge2AdjecentRings(t *testing.T) {
 		testcase{
 			desc: "PacMan case 8",
 			hm: new(hitmap.M).AppendSegment(
-				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{0, 1}, {1, 1}, {1, 2}}),
-				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{0, 3}, {1, 2}, {2, 3}}),
+				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{X: 0, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 2}}),
+				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{X: 0, Y: 3}, {X: 1, Y: 2}, {X: 2, Y: 3}}),
 			),
 			icols: [2][2][]maths.Pt{
 				{
-					{{0, 0}, {0, 1}, {0, 3}},
-					{{1, 0}, {1, 1}, {1, 2}, {1, 3}},
+					{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 3}},
+					{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 3}},
 				},
 				{
-					{{1, 0}, {1, 1}, {1, 2}, {1, 3}},
-					{{2, 0}, {2, 3}},
+					{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 3}},
+					{{X: 2, Y: 0}, {X: 2, Y: 3}},
 				},
 			},
 			pt2my: [2]map[maths.Pt]int64{
 				{
-					{0, 1}: 200,
+					{X: 0, Y: 1}: 200,
 				},
 				{
-					{1, 2}: 300,
+					{X: 1, Y: 2}: 300,
 				},
 			},
 			testYs: true,
@@ -314,19 +311,19 @@ func TestMerge2AdjecentRings(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{0, 0}, {2, 0}, {2, 3}, {1, 2}, {1, 1}, {0, 1}},
+						Points: []maths.Pt{{X: 0, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 3}, {X: 1, Y: 2}, {X: 1, Y: 1}, {X: 0, Y: 1}},
 					},
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 1}, {1, 1}, {1, 2}},
+						Points: []maths.Pt{{X: 0, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 2}},
 					},
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{0, 1}, {1, 2}, {0, 3}},
+						Points: []maths.Pt{{X: 0, Y: 1}, {X: 1, Y: 2}, {X: 0, Y: 3}},
 					},
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 3}, {1, 2}, {2, 3}},
+						Points: []maths.Pt{{X: 0, Y: 3}, {X: 1, Y: 2}, {X: 2, Y: 3}},
 					},
 				},
 				Y1s: []YEdge{
@@ -370,38 +367,38 @@ func TestMerge2AdjecentRings(t *testing.T) {
 			desc: "The Letter E",
 			// HM {{{3
 			hm: new(hitmap.M).AppendSegment(
-				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{0, 1}, {4, 1}, {4, 8}, {0, 8}}),
-				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{1, 2}, {3, 2}, {3, 4}, {1, 4}}),
-				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{1, 5}, {3, 5}, {3, 7}, {1, 7}}),
+				hitmap.NewSegmentFromRing(maths.Inside, []maths.Pt{{X: 0, Y: 1}, {X: 4, Y: 1}, {X: 4, Y: 8}, {X: 0, Y: 8}}),
+				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{X: 1, Y: 2}, {X: 3, Y: 2}, {X: 3, Y: 4}, {X: 1, Y: 4}}),
+				hitmap.NewSegmentFromRing(maths.Outside, []maths.Pt{{X: 1, Y: 5}, {X: 3, Y: 5}, {X: 3, Y: 7}, {X: 1, Y: 7}}),
 			),
 			// Points {{{3
 			icols: [2][2][]maths.Pt{
 				{
-					{{0, 0}, {0, 1}, {0, 8}, {0, 9}},
-					{{1, 0}, {1, 1}, {1, 2}, {1, 4}, {1, 5}, {1, 7}, {1, 8}, {1, 9}},
+					{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 8}, {X: 0, Y: 9}},
+					{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 4}, {X: 1, Y: 5}, {X: 1, Y: 7}, {X: 1, Y: 8}, {X: 1, Y: 9}},
 				},
 				{
-					{{1, 0}, {1, 1}, {1, 2}, {1, 4}, {1, 5}, {1, 7}, {1, 8}, {1, 9}},
-					{{3, 0}, {3, 1}, {3, 2}, {3, 4}, {3, 5}, {3, 7}, {3, 8}, {3, 9}},
+					{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 4}, {X: 1, Y: 5}, {X: 1, Y: 7}, {X: 1, Y: 8}, {X: 1, Y: 9}},
+					{{X: 3, Y: 0}, {X: 3, Y: 1}, {X: 3, Y: 2}, {X: 3, Y: 4}, {X: 3, Y: 5}, {X: 3, Y: 7}, {X: 3, Y: 8}, {X: 3, Y: 9}},
 				},
 			},
 			// MaxY Point Map {{{3
 			pt2my: [2]map[maths.Pt]int64{
 				{
-					{0, 0}: 0,
-					{0, 1}: 100,
-					{0, 8}: 800,
-					{0, 9}: 900,
+					{X: 0, Y: 0}: 0,
+					{X: 0, Y: 1}: 100,
+					{X: 0, Y: 8}: 800,
+					{X: 0, Y: 9}: 900,
 				},
 				{
-					{1, 0}: 0,
-					{1, 1}: 100,
-					{1, 2}: 200,
-					{1, 4}: 400,
-					{1, 5}: 500,
-					{1, 7}: 700,
-					{1, 8}: 800,
-					{1, 9}: 900,
+					{X: 1, Y: 0}: 0,
+					{X: 1, Y: 1}: 100,
+					{X: 1, Y: 2}: 200,
+					{X: 1, Y: 4}: 400,
+					{X: 1, Y: 5}: 500,
+					{X: 1, Y: 7}: 700,
+					{X: 1, Y: 8}: 800,
+					{X: 1, Y: 9}: 900,
 				},
 			},
 			testYs: true,
@@ -413,23 +410,23 @@ func TestMerge2AdjecentRings(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{0, 0}, {3, 0}, {3, 1}, {0, 1}},
+						Points: []maths.Pt{{X: 0, Y: 0}, {X: 3, Y: 0}, {X: 3, Y: 1}, {X: 0, Y: 1}},
 					},
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 1}, {3, 1}, {3, 2}, {1, 2}, {1, 4}, {3, 4}, {3, 5}, {1, 5}, {1, 7}, {3, 7}, {3, 8}, {0, 8}},
+						Points: []maths.Pt{{X: 0, Y: 1}, {X: 3, Y: 1}, {X: 3, Y: 2}, {X: 1, Y: 2}, {X: 1, Y: 4}, {X: 3, Y: 4}, {X: 3, Y: 5}, {X: 1, Y: 5}, {X: 1, Y: 7}, {X: 3, Y: 7}, {X: 3, Y: 8}, {X: 0, Y: 8}},
 					},
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{0, 8}, {3, 8}, {3, 9}, {0, 9}},
+						Points: []maths.Pt{{X: 0, Y: 8}, {X: 3, Y: 8}, {X: 3, Y: 9}, {X: 0, Y: 9}},
 					},
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{1, 2}, {3, 2}, {3, 4}, {1, 4}},
+						Points: []maths.Pt{{X: 1, Y: 2}, {X: 3, Y: 2}, {X: 3, Y: 4}, {X: 1, Y: 4}},
 					},
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{1, 5}, {3, 5}, {3, 7}, {1, 7}},
+						Points: []maths.Pt{{X: 1, Y: 5}, {X: 3, Y: 5}, {X: 3, Y: 7}, {X: 1, Y: 7}},
 					},
 				},
 				// Y1s {{{4
@@ -522,31 +519,31 @@ func TestMerge2AdjecentRings(t *testing.T) {
 			hm: new(hitmap.M).AppendSegment(
 				hitmap.NewSegmentFromRing(
 					maths.Inside,
-					[]maths.Pt{{0, 0}, {2, 0}, {2, 4}, {0, 4}},
+					[]maths.Pt{{X: 0, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 4}, {X: 0, Y: 4}},
 				),
 				hitmap.NewSegmentFromRing(
 					maths.Outside,
-					[]maths.Pt{{1, 2}, {2, 1}, {2, 3}},
+					[]maths.Pt{{X: 1, Y: 2}, {X: 2, Y: 1}, {X: 2, Y: 3}},
 				),
 			),
 			// Points {{{3
 			icols: [2][2][]maths.Pt{
 				{
-					{{0, 0}, {0, 4}},
-					{{1, 0}, {1, 2}, {1, 4}},
+					{{X: 0, Y: 0}, {X: 0, Y: 4}},
+					{{X: 1, Y: 0}, {X: 1, Y: 2}, {X: 1, Y: 4}},
 				},
 				{
-					{{1, 0}, {1, 2}, {1, 4}},
-					{{2, 0}, {2, 1}, {2, 3}, {2, 4}},
+					{{X: 1, Y: 0}, {X: 1, Y: 2}, {X: 1, Y: 4}},
+					{{X: 2, Y: 0}, {X: 2, Y: 1}, {X: 2, Y: 3}, {X: 2, Y: 4}},
 				},
 			},
 			// MaxY {{{3
 			pt2my: [2]map[maths.Pt]int64{
 				{
-					{1, 2}: 300,
+					{X: 1, Y: 2}: 300,
 				},
 				{
-					{1, 2}: 300,
+					{X: 1, Y: 2}: 300,
 				},
 			},
 			testYs: true,
@@ -558,11 +555,11 @@ func TestMerge2AdjecentRings(t *testing.T) {
 				Rings: []Ring{
 					{
 						Label:  maths.Inside,
-						Points: []maths.Pt{{0, 0}, {2, 0}, {2, 1}, {1, 2}, {2, 3}, {2, 4}, {0, 4}},
+						Points: []maths.Pt{{X: 0, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 3}, {X: 2, Y: 4}, {X: 0, Y: 4}},
 					},
 					{
 						Label:  maths.Outside,
-						Points: []maths.Pt{{1, 2}, {2, 1}, {2, 3}},
+						Points: []maths.Pt{{X: 1, Y: 2}, {X: 2, Y: 1}, {X: 2, Y: 3}},
 					},
 				},
 				// Y1s {{{4

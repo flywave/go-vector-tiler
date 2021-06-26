@@ -52,7 +52,6 @@ func TestLineString(t *testing.T) {
 				return
 			}
 			if tc.err != nil {
-				// we are expecting an error nothing more.
 				return
 			}
 			if len(tc.expected) != len(got) {
