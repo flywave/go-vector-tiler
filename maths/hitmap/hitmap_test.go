@@ -5,9 +5,9 @@ import (
 	"log"
 	"testing"
 
+	"github.com/flywave/go-vector-tiler/basic"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/gdey/tbltest"
-	"github.com/flywave/go-vector-tiler/basic"
 )
 
 func TestSegmentLinesContains(t *testing.T) {
@@ -21,8 +21,8 @@ func TestSegmentLinesContains(t *testing.T) {
 		desc  string
 	}
 
-	cpt := func(x, y float64) tstPt { return tstPt{maths.Pt{x, y}, true} }
-	ucpt := func(x, y float64) tstPt { return tstPt{maths.Pt{x, y}, false} }
+	cpt := func(x, y float64) tstPt { return tstPt{maths.Pt{X: x, Y: y}, true} }
+	ucpt := func(x, y float64) tstPt { return tstPt{maths.Pt{X: x, Y: y}, false} }
 
 	doesContain := func(pt tstPt) string {
 		if pt.contained {
@@ -33,7 +33,7 @@ func TestSegmentLinesContains(t *testing.T) {
 	lines := func(xys ...float64) (lns []maths.Line) {
 		lxi, lyi := len(xys)-2, len(xys)-1
 		for xi, yi := 0, 1; yi < len(xys); lxi, lyi, xi, yi = xi, yi, xi+2, yi+2 {
-			lns = append(lns, maths.Line{maths.Pt{xys[lxi], xys[lyi]}, maths.Pt{xys[xi], xys[yi]}})
+			lns = append(lns, maths.Line{maths.Pt{X: xys[lxi], Y: xys[lyi]}, maths.Pt{X: xys[xi], Y: xys[yi]}})
 		}
 		return lns
 	}
@@ -137,7 +137,6 @@ func TestSegmentLinesContains(t *testing.T) {
 }
 
 func TestNewFromPolygon(t *testing.T) {
-	// This just test to see if the new function panics for any reason.
 	var tests map[string]basic.Polygon
 	fn := func(t *testing.T, test basic.Polygon) {
 		t.Parallel()
@@ -146,7 +145,6 @@ func TestNewFromPolygon(t *testing.T) {
 				t.Errorf("panic, expected nil got %v", r)
 			}
 		}()
-		// Don't want it to optimized away.
 		hm := NewFromPolygon(test)
 		_ = hm
 	}
@@ -166,7 +164,6 @@ func TestNewFromPolygon(t *testing.T) {
 }
 
 func TestNewFromMultiPolygon(t *testing.T) {
-	// This just test to see if the new function panics for any reason.
 	var tests map[string]basic.MultiPolygon
 	fn := func(t *testing.T, test basic.MultiPolygon) {
 		t.Parallel()
@@ -175,7 +172,6 @@ func TestNewFromMultiPolygon(t *testing.T) {
 				t.Errorf("panic, expected nil got %v", r)
 			}
 		}()
-		// Don't want it to optimized away.
 		hm := NewFromMultiPolygon(test)
 		_ = hm
 	}

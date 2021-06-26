@@ -12,11 +12,11 @@ import (
 	"time"
 
 	svg "github.com/ajstarks/svgo"
-	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-geom/general"
+	"github.com/flywave/go-vector-tiler/convert"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/flywave/go-vector-tiler/maths/hitmap"
 	"github.com/flywave/go-vector-tiler/maths/points"
-	"github.com/go-spatial/tegola/internal/convert"
 )
 
 var ColLenghtErr = errors.New("Col's need to have length of at least 2")
@@ -25,17 +25,16 @@ type Ring struct {
 	Points []maths.Pt
 	Label  maths.Label
 
-	// Cached extent
 	hasExtent bool
-	extent    *geom.Extent
+	extent    *general.Extent
 }
 
-func (r *Ring) initExtent() *geom.Extent {
+func (r *Ring) initExtent() *general.Extent {
 	if r.hasExtent {
 		return r.extent
 	}
 	pts := convert.FromMathPoint(r.Points...)
-	r.extent = geom.NewExtent(pts...)
+	r.extent = general.NewExtent(pts...)
 	r.hasExtent = true
 	return r.extent
 }
@@ -48,7 +47,6 @@ func (r *Ring) MaxX() float64       { return r.initExtent().MaxX() }
 func (r *Ring) ExtentArea() float64 { return r.initExtent().Area() }
 func (r *Ring) MaxY() float64       { return r.initExtent().MaxY() }
 
-// LineRing returns a copy of the points in the correct winding order.
 func (r Ring) LineRing() (pts []maths.Pt) {
 	pts = append(pts, r.Points...)
 	wo := maths.WindingOrderOfPts(pts)
@@ -56,7 +54,6 @@ func (r Ring) LineRing() (pts []maths.Pt) {
 		(r.Label != maths.Inside && wo == maths.Clockwise) {
 		points.Reverse(pts)
 	}
-	// Lets move the points around so that the left-top most point is first.
 	points.RotateToLowestsFirst(pts)
 	return pts
 }
@@ -68,7 +65,6 @@ type RingDesc struct {
 }
 
 type YEdge struct {
-	// Start y value (lowest value) of the edge.
 	Y     float64
 	Descs []RingDesc
 }
@@ -129,7 +125,6 @@ YLoop:
 				continue YLoop
 			}
 		}
-		// Did not find Y, append it.
 		rc.Y1s = append(rc.Y1s, YEdge{
 			Y:     ys[i].Y,
 			Descs: []RingDesc{{Idx: ridx, PtIdx: ys[i].Idx, Label: label}},
@@ -148,7 +143,6 @@ YLoop:
 				continue YLoop
 			}
 		}
-		// Did not find Y, append it.
 		rc.Y2s = append(rc.Y2s, YEdge{
 			Y:     ys[i].Y,
 			Descs: []RingDesc{{Idx: ridx, PtIdx: ys[i].Idx, Label: label}},
@@ -170,9 +164,7 @@ func (rc *RingCol) addPts(hm hitmap.Interface, b *Builder, pts1, pts2 []maths.Pt
 
 	tri := maths.Triangle{pts[0], pts[1], pts[2]}
 	label := hm.LabelFor(tri.Center())
-	// label := hm.LabelFor(hitpoint(pts[0], pts[1], pts[2]))
 	if ring, x1, y1s, x2, y2s, new := b.AddPts(label, pts1, pts2); new {
-		// We have a new ring.
 		ridx := len(rc.Rings)
 		rc.X1, rc.X2 = x1, x2
 		rc.Rings = append(rc.Rings, ring)
@@ -230,9 +222,6 @@ func (rc *RingCol) searchEdge(edge []YEdge, y1, y2 float64, fn func(idx int, ptI
 	if rc == nil {
 		return
 	}
-	// Goal: Search through the rings looking for a ring that has a edge based on y1, and y2 and the x of the given YEdge.
-	// Work through the edge looking for A Y that matches. Since we now that edge is sorted, we need to first
-	// order y1 and y2.
 	var wantn bool
 	if y1 > y2 {
 		y1, y2 = y2, y1
@@ -246,13 +235,11 @@ func (rc *RingCol) searchEdge(edge []YEdge, y1, y2 float64, fn func(idx int, ptI
 	}
 	for i := range edge {
 		if y1 < edge[i].Y {
-			// We have passed smallest point.
 			return
 		}
 		if y1 != edge[i].Y {
 			continue
 		}
-		//log.Println("Found possible jump point.", edge[i], y1, y2)
 		for _, desc := range edge[i].Descs {
 			px := rc.Rings[desc.Idx].Points[desc.PtIdx].X
 			pptid := desc.PtIdx - 1
@@ -261,9 +248,7 @@ func (rc *RingCol) searchEdge(edge []YEdge, y1, y2 float64, fn func(idx int, ptI
 			}
 			ppt := rc.Rings[desc.Idx].Points[pptid]
 
-			// We need to check is the previous point create the edge?
 			if ppt.X == px && ppt.Y == y2 {
-				// Okay we have found an edge.
 				if !switchfn(desc, pptid) {
 					return
 				}
@@ -274,7 +259,6 @@ func (rc *RingCol) searchEdge(edge []YEdge, y1, y2 float64, fn func(idx int, ptI
 			}
 			npt := rc.Rings[desc.Idx].Points[nptid]
 			if npt.X == px && npt.Y == y2 {
-				// Okay we have found an edge.
 				if !switchfn(desc, nptid) {
 					return
 				}
@@ -318,15 +302,12 @@ func (rc *RingCol) MultiPolygon() [][][]maths.Pt {
 	var rings [][][]maths.Pt
 	var miny, maxy float64
 
-	// used to remove outside rings. If their bounding box touches these then they can be removed.
 	if len(rc.Y1s) > 0 {
 		miny, maxy = rc.Y1s[0].Y, rc.Y1s[0].Y
 	} else if len(rc.Y2s) > 0 {
 		miny, maxy = rc.Y2s[0].Y, rc.Y2s[0].Y
 	}
 
-	// Mark any polygon touching the left and right border as being able to be discarded.
-	// Start with the left border
 	for _, yedge := range rc.Y1s {
 		if miny > yedge.Y {
 			miny = yedge.Y
@@ -343,7 +324,6 @@ func (rc *RingCol) MultiPolygon() [][][]maths.Pt {
 
 	}
 
-	// Now with the right border.
 	for _, yedge := range rc.Y2s {
 		if miny > yedge.Y {
 			miny = yedge.Y
@@ -364,41 +344,29 @@ func (rc *RingCol) MultiPolygon() [][][]maths.Pt {
 
 	for i, ring := range rc.Rings {
 
-		// We can discard this ring.
 		if discardPlys[i] {
 			continue
 		}
 
 		if ring.Label == maths.Outside {
 			e := ring.Extent()
-			// the ring touches the the top or bottom boader.
 			if e[1] == miny || e[3] == maxy {
 				continue
 			}
-			// Save for later processing.
 			outsidePlys = append(outsidePlys, i)
 			continue
 		}
-		// This is an inside ring. Make a copy.
 		idxmap[len(rings)] = i
 		lnring := ring.LineRing()
 		segmap[len(rings)] = hitmap.NewSegmentFromRing(maths.Inside, ring.Points)
 		rings = append(rings, [][]maths.Pt{lnring})
 	}
-	// we need to sort the rings by area.
-	/*
-		sort.Sort(mplysByArea{
-			pmap: idxmap,
-			ply:  rings,
-		})
-	*/
 
-	// Now run through all the outside Rings.
 	for _, i := range outsidePlys {
 
 		for j := len(rings) - 1; j >= 0; j-- {
 			pts := convert.FromMathPoint(rings[j][0]...)
-			ibb := geom.NewExtent(pts...)
+			ibb := general.NewExtent(pts...)
 
 			if ibb.Area() <= rc.Rings[i].ExtentArea() {
 				continue
@@ -408,14 +376,11 @@ func (rc *RingCol) MultiPolygon() [][][]maths.Pt {
 			}
 
 			lnring := rc.Rings[i].LineRing()
-			//log.Println("Checking to see if the ring contains", lnring[0], "\n", segmap[j], "\n", ibb)
 			if !segmap[j].Contains(lnring[0]) {
 				continue
 			}
 			rings[j] = append(rings[j], lnring)
-			// Go to the next outside polygon.
 			break
-			//}
 		}
 	}
 	return rings
@@ -933,7 +898,7 @@ func MergeCols(cols []RingCol) RingCol {
 	return lcol
 }
 
-func GenerateMultiPolygon(cols []RingCol) (plys [][][]maths.Pt) {
+func GenerateMultiPolygon(cols []RingCol) (plys []maths.Polygon) {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 	var wChan = make(chan [2]int)

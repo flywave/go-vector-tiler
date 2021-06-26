@@ -1,7 +1,3 @@
-/*
-Package math contains generic math functions that we need for doing transforms.
-this package will augment the go math library.
-*/
 package maths
 
 import (
@@ -22,10 +18,13 @@ const (
 	PiDiv4      = math.Pi / 4.0
 )
 
-// Pt describes a 2d Point.
 type Pt struct {
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
+}
+
+func (l Pt) GetType() string {
+	return "Point"
 }
 
 func (pt Pt) XCoord() float64   { return pt.X }
@@ -99,19 +98,15 @@ func NewSegments(f []float64) (lines []Line, err error) {
 	return lines, nil
 }
 
-// AreaOfPolygon will calculate the Area of a polygon using the surveyor's formula
-// (https://en.wikipedia.org/wiki/Shoelace_formula)
 func AreaOfPolygon(p geom.Polygon) (area float64) {
 	sublines := p.Sublines()
 	if len(sublines) == 0 {
 		return 0
 	}
-	// Only care about the outer ring.
 	return AreaOfPolygonLineString(sublines[0])
 }
 
 func AreaOfPolygonLineString(line geom.LineString) (area float64) {
-	// Only care about the outer ring.
 	points := line.Subpoints()
 
 	n := len(points)
@@ -133,7 +128,6 @@ func AreaOfRing(points ...Pt) (area float64) {
 	return math.Abs(area) / 2.0
 }
 
-// DistOfLine will calculate the Manhattan distance of a line.
 func DistOfLine(l geom.LineString) (dist float64) {
 	points := l.Subpoints()
 	if len(points) == 0 {
@@ -145,8 +139,6 @@ func DistOfLine(l geom.LineString) (dist float64) {
 	return dist
 }
 
-// DistOfLine will calculate the
-
 func RadToDeg(rad float64) float64 {
 	return rad * Rad2Deg
 }
@@ -155,15 +147,7 @@ func DegToRad(deg float64) float64 {
 	return deg * Deg2Rad
 }
 
-// Intersect find the intersection point (x,y) between two lines if there is one. Ok will be true if it found an intersection point, and false if it did not.
 func Intersect(l1, l2 Line) (pt Pt, ok bool) {
-	/*
-		if !l1.DoesIntersect(l2) {
-			return pt, false
-		}
-	*/
-
-	// if the l1 is vertical.
 	if l1.IsVertical() {
 
 		if l2.IsVertical() {
@@ -192,12 +176,10 @@ func Intersect(l1, l2 Line) (pt Pt, ok bool) {
 	m1, b1, sdef1 := l1.SlopeIntercept()
 	m2, b2, sdef2 := l2.SlopeIntercept()
 
-	// if the slopes are the same then they are parallel so, they don't intersect.
 	if sdef1 == sdef2 && m1 == m2 {
 		return Pt{}, false
 	}
 
-	// line1 is horizontal. We have a value for x, need a value for y.
 	if !sdef1 {
 		x := l1[0].X
 		if m2 == 0 {
@@ -206,7 +188,6 @@ func Intersect(l1, l2 Line) (pt Pt, ok bool) {
 		y := (m2 * x) + b2
 		return Pt{X: x, Y: y}, true
 	}
-	// line2 is horizontal. We have a value for x, need a value for y.
 	if !sdef2 {
 		x := l2[0].X
 		if m1 == 0 {
@@ -232,7 +213,6 @@ func Intersect(l1, l2 Line) (pt Pt, ok bool) {
 	return Pt{X: x, Y: y}, true
 }
 
-// Contains takes a subject (made up of point pairs) and a pt, and returns weather the pt is contained by the subject.
 func Contains(subject []float64, pt Pt) (bool, error) {
 	segments, err := NewSegments(subject)
 	if err != nil {
@@ -240,21 +220,16 @@ func Contains(subject []float64, pt Pt) (bool, error) {
 	}
 	count := 0
 	ray := Line{pt, Pt{0, pt.Y}}
-	// eliminate segments we don't need touch.
 	for i := range segments {
-
 		line := segments[i]
 
 		deltaY := line[1].Y - line[0].Y
-		// If the line is horizontal skipp it.
 		if deltaY == 0 {
 			continue
 		}
-		// if both points are greater or equal to the pts x we can remove it.
 		if line[0].X >= pt.X && line[1].X >= pt.X {
 			continue
 		}
-		// if the line is above ray, we don't need to consider it.
 		if line[0].Y <= pt.Y && line[1].Y <= pt.Y {
 			continue
 		}
@@ -262,7 +237,6 @@ func Contains(subject []float64, pt Pt) (bool, error) {
 		if ray[1].X > line[1].X {
 			ray[1].X = line[1].X
 		}
-		// move the point out by 10
 		ray[1].X -= 10
 
 		pt, ok := Intersect(ray, line)
@@ -272,21 +246,16 @@ func Contains(subject []float64, pt Pt) (bool, error) {
 
 		count++
 	}
-	// Even means outside, odd means the point is contained.
 	return count%2 != 0, nil
 }
 
 func XYOrder(pt1, pt2 Pt) int {
 
 	switch {
-
-	// Test the x-coord first
 	case pt1.X > pt2.X:
 		return 1
 	case pt1.X < pt2.X:
 		return -1
-
-		// Test the y-coord second
 	case pt1.Y > pt2.Y:
 		return 1
 	case pt1.Y < pt2.Y:
@@ -294,41 +263,30 @@ func XYOrder(pt1, pt2 Pt) int {
 
 	}
 
-	// when you exclude all other possibilities, what remains  is...
-	return 0 // they are the same point
+	return 0
 }
 
 func YXorder(pt1, pt2 Pt) int {
-
-	// Test the y-coord first
 	switch {
 	case pt1.Y > pt2.Y:
 		return 1
 	case pt1.Y < pt2.Y:
 		return -1
-
-		// Test the x-coord second
 	case pt1.X > pt2.X:
 		return 1
 	case pt1.X < pt2.X:
 		return -1
 	}
-
-	// when you exclude all other possibilities, what remains  is...
-	return 0 // they are the same point
+	return 0
 }
 
-// Powers of 2
 func Exp2(p uint64) uint64 {
-	// this mimics behavior from casting
-	// a math.Exp2 which should overflow
 	if p > 63 {
 		p = 63
 	}
 	return uint64(1) << p
 }
 
-// Minimum of uints
 func Min(x, y uint) uint {
 	if x < y {
 		return x

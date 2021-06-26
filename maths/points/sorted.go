@@ -6,8 +6,6 @@ import (
 	"github.com/flywave/go-vector-tiler/maths"
 )
 
-// SortAndUnique sorts the points using the X first then Y ordering
-// and removes duplicates.
 func SortAndUnique(pts []maths.Pt) []maths.Pt {
 	if len(pts) == 0 {
 		return pts

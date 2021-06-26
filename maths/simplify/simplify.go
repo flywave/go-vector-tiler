@@ -7,7 +7,6 @@ import (
 	"github.com/flywave/go-vector-tiler/maths/points"
 )
 
-// SimplifyGeometry applies the DouglasPeucker simplification routine to the supplied geometry
 func SimplifyGeometry(g geom.Geometry, tolerance float64) geom.Geometry {
 	switch gg := g.(type) {
 	case geom.Polygon:
@@ -77,7 +76,6 @@ func simplifyPolygon(g geom.Polygon, tolerance float64) basic.Polygon {
 
 	var poly basic.Polygon
 	sqTolerance := tolerance * tolerance
-	// First lets look the first line, then we will simplify the other lines.
 	for i := range lines {
 		area := maths.AreaOfPolygonLineString(lines[i])
 		l := basic.CloneLine(lines[i])
@@ -86,7 +84,6 @@ func simplifyPolygon(g geom.Polygon, tolerance float64) basic.Polygon {
 			if i == 0 {
 				return basic.ClonePolygon(g)
 			}
-			// don't simplify the internal line
 			poly = append(poly, l)
 			continue
 		}
@@ -100,7 +97,6 @@ func simplifyPolygon(g geom.Polygon, tolerance float64) basic.Polygon {
 		}
 
 		pts = normalizePoints(pts)
-		// If the last point is the same as the first, remove the first point.
 		if len(pts) <= 4 {
 			if i == 0 {
 				return basic.ClonePolygon(g)
@@ -114,7 +110,6 @@ func simplifyPolygon(g geom.Polygon, tolerance float64) basic.Polygon {
 			if i == 0 {
 				return nil
 			}
-			//log.Println("\t Skipping polygon subline.")
 			continue
 		}
 

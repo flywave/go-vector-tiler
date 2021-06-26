@@ -2,7 +2,6 @@ package maths
 
 import geom "github.com/flywave/go-geom"
 
-// WindingOrder the direction the line strings.
 type WindingOrder uint8
 
 const (
@@ -37,8 +36,6 @@ func WindingOrderOfPts(pts []Pt) WindingOrder {
 		sum += (pts[i].X * pts[i+1].Y) - (pts[i+1].X * pts[i].Y)
 	}
 	sum += (pts[li].X * pts[0].Y) - (pts[0].X * pts[li].Y)
-
-	//log.Println("For pts:", pts, "sum", sum)
 
 	if sum < 0 {
 		return CounterClockwise

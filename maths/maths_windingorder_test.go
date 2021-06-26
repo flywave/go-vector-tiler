@@ -17,7 +17,6 @@ func invertPoints(pts []float64) (rpts []float64) {
 }
 
 func TestWindingOrderOf(t *testing.T) {
-
 	type testcase struct {
 		points   []float64
 		expected maths.WindingOrder

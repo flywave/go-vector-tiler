@@ -26,7 +26,6 @@ func (se *segEventsY) Add(l maths.Line) {
 	if se == nil {
 		return
 	}
-	// Skip dup points
 	var ev segEventY
 	if l[0].IsEqual(l[1]) {
 		return
@@ -65,37 +64,31 @@ func (se segEventsY) Contains(pt maths.Pt) bool {
 			continue
 		}
 
-		//y1100, y2100 = int64(seg.events[i].y1*100), int64(seg.events[i].y2*100)
 		x1100, x2100 = se[i].x1, se[i].x2
 
-		// Horizontal line
 		if x1100 == x2100 &&
 			x100 == x1100 {
 
 			if se[i].y1 <= pt.Y &&
 				pt.Y <= se[i].y2 {
-				// if we are on the line return true.
 				return true
 			}
 			continue
 		}
 
 		if x100 == x1100 && se[i].y1 < pt.Y {
-			// We are going through a vertex.
 			if x2100 <= x100 {
 				count++
 			}
 			continue
 		}
 		if x100 == x2100 && se[i].y2 < pt.Y {
-			// We are going through a vertex.
 			if x1100 <= x100 {
 				count++
 			}
 			continue
 		}
 
-		// the segment is verticle and the x is the same; the point is contained.
 		if !se[i].isMDefined && pt.Y == se[i].y1 {
 			return true
 		}
@@ -105,9 +98,6 @@ func (se segEventsY) Contains(pt maths.Pt) bool {
 			continue
 		}
 
-		// need to solve for y.
-		// y = mx + b
-		// x = (b - y)/m
 		x = int64(((se[i].b - pt.Y) / se[i].m) * 100)
 		if x == x100 {
 			return true

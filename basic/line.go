@@ -133,6 +133,8 @@ func NewMultiLine(pointPairLines ...[]float64) (ml MultiLine) {
 	return ml
 }
 
+func (MultiLine) GetType() string { return "MultiLine" }
+
 func (MultiLine) String() string { return "MultiLine" }
 
 func (l MultiLine) Data() [][][]float64 {

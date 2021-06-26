@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/gdey/tbltest"
-	"github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
 func TestNewRegion(t *testing.T) {

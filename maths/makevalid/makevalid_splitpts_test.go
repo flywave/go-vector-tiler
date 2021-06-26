@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-geom/general"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/flywave/go-vector-tiler/maths/internal/assert"
 	"github.com/gdey/tbltest"
@@ -88,7 +88,7 @@ func TestSplitSegments(t *testing.T) {
 	type tcase struct {
 		segs    []maths.Line
 		lns     [][2][2]float64
-		clipbox *geom.Extent
+		clipbox *general.Extent
 		err     error
 	}
 	ctx := context.Background()

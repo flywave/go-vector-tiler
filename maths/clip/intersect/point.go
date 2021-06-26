@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	list "github.com/flywave/go-vector-tiler/container/singlelist"
+	ptList "github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
-	ptList "github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
 type Point struct {
@@ -32,10 +33,8 @@ func (p *Point) AsRegionPoint() *RegionPoint   { return (*RegionPoint)(p) }
 
 func (p *Point) NextWalk() list.Elementer {
 	if p.Inward {
-		// log.Println("Selecting Subject...")
 		return p.subject.Next()
 	}
-	//log.Println("Selecting Region...")
 	return p.region.Next()
 }
 
@@ -45,24 +44,6 @@ func (p *Point) PrintNeighbors() {
 	log.Println("\tSubject Neighbor. ->", p.subject.Next())
 }
 
-/*
-func (i *Point) Walk() (w Walker) {
-	var ele list.Elementer
-	var ok bool
-	if i.Inward {
-		ele = i.subject.Next()
-	}
-	ele = i.region.Next()
-	for w, ok = ele.(Walker); ele != nil && !ok; ele = ele.Next() {
-	}
-	if ele != nil {
-		return w
-	}
-	return nil
-}
-*/
-
-// RegionPoint causes an intersect point to "act" like a region point so that it can be inserted into a region list.
 type RegionPoint Point
 
 func (i *RegionPoint) Next() list.Elementer { return i.region.Next() }
@@ -81,7 +62,6 @@ func (i *RegionPoint) GoString() string {
 	return fmt.Sprintf("%T(%[1]p)[%v;%v]", i, i.Point(), i.Inward)
 }
 
-// SubjectPoing causes an intersect point to "act" like a subject point so that it can be inserted into a subject list.
 type SubjectPoint Point
 
 func (i *SubjectPoint) Next() list.Elementer { return i.subject.Next() }

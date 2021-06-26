@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
-	"github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
 // IntersectionCode encodes weather the intersect point found has the following points.

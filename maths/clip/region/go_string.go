@@ -3,8 +3,8 @@ package region
 import (
 	"fmt"
 
+	"github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
-	"github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
 func (r *Region) GoString() string {

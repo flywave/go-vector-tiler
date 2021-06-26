@@ -3,8 +3,8 @@ package subject
 import (
 	"fmt"
 
+	"github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
-	"github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
 func (s *Subject) GoString() string {

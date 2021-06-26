@@ -13,7 +13,6 @@ import (
 	"github.com/flywave/go-vector-tiler/maths/webmercator"
 )
 
-// ApplyToPoints applys the given function to each point in the geometry and any sub geometries, return a new transformed geometry.
 func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64, error)) (geom.Geometry, error) {
 	switch geo := geometry.(type) {
 	default:
@@ -62,13 +61,11 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 		lines := geo.Data()
 
 		for i, line := range lines {
-			// getting a geometry interface back
 			linei, err := ApplyToPoints(gen.NewLineString(line), f)
 			if err != nil {
 				return nil, fmt.Errorf("got error converting line(%v) of multiline: %v", i, err)
 			}
 
-			// get the value
 			linev, ok := linei.(geom.LineString)
 			if !ok {
 				panic("we did not get the conversion we were expecting")
@@ -82,13 +79,11 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 		poly := geo.Data()
 
 		for i, line := range poly {
-			// getting a geometry inteface back
 			linei, err := ApplyToPoints(gen.NewLineString(line), f)
 			if err != nil {
 				return nil, fmt.Errorf("got error converting line(%v) of polygon: %v", i, err)
 			}
 
-			// get the value
 			linev, ok := linei.(geom.LineString)
 			if !ok {
 				panic("we did not get the conversion we were expecting")
@@ -102,13 +97,11 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 		mpoly := geo.Data()
 
 		for i, poly := range mpoly {
-			// getting a geometry inteface back
 			polyi, err := ApplyToPoints(gen.NewPolygon(poly), f)
 			if err != nil {
 				return nil, fmt.Errorf("got error converting poly(%v) of multipolygon: %v", i, err)
 			}
 
-			// get the value
 			polyv, ok := polyi.(geom.Polygon)
 			if !ok {
 				panic("we did not get the conversion we were expecting")
@@ -120,7 +113,6 @@ func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64,
 	}
 }
 
-// CloneGeomtry returns a deep clone of the Geometry.
 func CloneGeometry(geometry geom.Geometry) (geom.Geometry, error) {
 	switch geo := geometry.(type) {
 	default:
@@ -151,32 +143,22 @@ func CloneGeometry(geometry geom.Geometry) (geom.Geometry, error) {
 	}
 }
 
-// ToWebMercator takes a SRID and a geometry encode using that srid, and returns a geometry encoded as a WebMercator.
 func ToWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
 		return nil, fmt.Errorf("don't know how to convert from %v to %v.", gvt.WebMercator, SRID)
 	case gvt.WebMercator:
-		// Instead of just returning the geometry, we are cloning it so that the user of the API can rely
-		// on the result to alway be a copy. Instead of being a reference in the on instance that it's already
-		// in the same SRID.
-
 		return CloneGeometry(geometry)
 	case gvt.WGS84:
-
 		return ApplyToPoints(geometry, webmercator.PToXY)
 	}
 }
 
-// FromWebMercator takes a geometry encoded with WebMercator, and returns a Geometry encodes to the given srid.
 func FromWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
 		return nil, fmt.Errorf("don't know how to convert from %v to %v.", SRID, gvt.WebMercator)
 	case gvt.WebMercator:
-		// Instead of just returning the geometry, we are cloning it so that the user of the API can rely
-		// on the result to alway be a copy. Instead of being a reference in the on instance that it's already
-		// in the same SRID.
 		return CloneGeometry(geometry)
 	case gvt.WGS84:
 		return ApplyToPoints(geometry, webmercator.PToLonLat)

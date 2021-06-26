@@ -1,14 +1,10 @@
 package assert
 
 type Equality struct {
-	// Message is the prefix message for the assersion
-	Message string
-	// Expected is the expected value for the assersion
+	Message  string
 	Expected string
-	// Got is the actual value
-	Got string
-	// Continue used to determine weather or not to continue with further assertions.
-	IsEqual bool
+	Got      string
+	IsEqual  bool
 }
 
 func (e Equality) Error() string {
@@ -18,7 +14,6 @@ func (e Equality) String() string { return e.Error() }
 
 func ErrorEquality(expErr, gotErr error) Equality {
 	if expErr != gotErr {
-		// could be because test.err == nil and err != nil.
 		if expErr == nil && gotErr != nil {
 			return Equality{
 				"unexpected error",
@@ -46,7 +41,6 @@ func ErrorEquality(expErr, gotErr error) Equality {
 		return Equality{IsEqual: true}
 	}
 	if expErr != nil {
-		// No need to look at other values, expected an error.
 		return Equality{}
 	}
 	return Equality{IsEqual: true}

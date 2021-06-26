@@ -5,10 +5,6 @@ import (
 	"fmt"
 )
 
-/*
-This file contains helper functions for json marshaling.
-*/
-
 type basicGeometry struct {
 	Type        string          `json:"type"`
 	Coordinates json.RawMessage `json:"coordinates,omitempty"`
@@ -21,12 +17,14 @@ func point(pts []float64) (Point, error) {
 	}
 	return Point{pts[0], pts[1]}, nil
 }
+
 func point3(pts []float64) (Point3, error) {
 	if len(pts) < 3 {
 		return Point3{}, fmt.Errorf("Not enough points for a Point3")
 	}
 	return Point3{pts[0], pts[1], pts[2]}, nil
 }
+
 func pointSlice(pts [][]float64) (mp []Point, err error) {
 	for _, p := range pts {
 		pt, err := point(p)
@@ -156,22 +154,22 @@ func UnmarshalJSON(data []byte) (geo Geometry, err error) {
 	return unmarshalBasicGeometry(bgeo)
 }
 
-/*=========================  BASIC TYPES ======================================*/
-
 func jsonTemplate(name, coords string) []byte {
 	return []byte(`{"type":"` + name + `","coordinates":` + coords + `}`)
 }
 
-// MarshalJSON
 func (p Point) internalMarshalJSON() string {
 	return fmt.Sprintf(`[%v,%v]`, p[0], p[1])
 }
+
 func (p Point) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("Point", p.internalMarshalJSON()), nil
 }
+
 func (p Point3) internalMarshalJSON() string {
 	return fmt.Sprintf(`[%v,%v,%v]`, p[0], p[1], p[2])
 }
+
 func (p Point3) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("Point3", p.internalMarshalJSON()), nil
 }
@@ -187,9 +185,11 @@ func (p MultiPoint) internalMarshalJSON() string {
 	s += `]`
 	return s
 }
+
 func (p MultiPoint) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("MultiPoint", p.internalMarshalJSON()), nil
 }
+
 func (p MultiPoint3) internalMarshalJSON() string {
 	s := "["
 	for i, pt := range p {
@@ -201,6 +201,7 @@ func (p MultiPoint3) internalMarshalJSON() string {
 	s += `]`
 	return s
 }
+
 func (p MultiPoint3) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("MultiPoint3", p.internalMarshalJSON()), nil
 }
@@ -220,6 +221,7 @@ func (l Line) internalMarshalJSON() string {
 func (l Line) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("LineString", l.internalMarshalJSON()), nil
 }
+
 func (l MultiLine) internalMarshalJSON() string {
 	s := "["
 	for i, line := range l {
@@ -231,9 +233,11 @@ func (l MultiLine) internalMarshalJSON() string {
 	s += `]`
 	return s
 }
+
 func (l MultiLine) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("MultiLineString", l.internalMarshalJSON()), nil
 }
+
 func (p Polygon) internalMarshalJSON() string {
 	s := "["
 	for i, line := range p {
@@ -245,9 +249,11 @@ func (p Polygon) internalMarshalJSON() string {
 	s += `]`
 	return s
 }
+
 func (p Polygon) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("Polygon", p.internalMarshalJSON()), nil
 }
+
 func (p MultiPolygon) internalMarshalJSON() string {
 	s := "["
 	for i, line := range p {
@@ -259,9 +265,11 @@ func (p MultiPolygon) internalMarshalJSON() string {
 	s += `]`
 	return s
 }
+
 func (p MultiPolygon) MarshalJSON() ([]byte, error) {
 	return jsonTemplate("MultiPolygon", p.internalMarshalJSON()), nil
 }
+
 func (c Collection) MarshalJSON() ([]byte, error) {
 	js := []byte(`{"type":"GeometryCollection","geometries":[`)
 	for i, g := range c {

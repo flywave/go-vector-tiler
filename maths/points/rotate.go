@@ -26,7 +26,6 @@ func RotateToLowestsFirst(pts []maths.Pt) {
 		return
 	}
 	bpts := ByXY(pts)
-	//Find the lowests point.
 	var fi int
 
 	for i := range bpts[1:] {

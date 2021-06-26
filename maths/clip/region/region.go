@@ -1,70 +1,28 @@
 package region
 
 import (
+	"github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
-	"github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
-/*
-A region is made up of axises and a winding order. A region can hold other points along it's axises.
-
-*/
 type Region struct {
 	list.List
 	sentinelPoints [4]*list.Pt
 	winding        maths.WindingOrder
-	// The direction of the Axis. true means it an Axis that goes from smaller to bigger, otherwise it goes from bigger point to smaller point.
-	aDownOrRight [4]bool
-	max, min     maths.Pt
+	aDownOrRight   [4]bool
+	max, min       maths.Pt
 }
 
-/*
-  Winding order:
-
-  Clockwise
-
-		        1
-		1pt   _____  2pt
-		     |     |
-		   0 |     | 2
-		     |_____|
-		0pt     3    3pt
-
-  Counter Clockwise
-
-		        3
-		0pt   _____  3pt
-		     |     |
-		   0 |     | 2
-		     |_____|
-		1pt     1    2pt
-*/
-
-// New creates a new region, initilization parameters as needed.
 func New(winding maths.WindingOrder, Min, Max maths.Pt) *Region {
 	return new(Region).Init(winding, Min, Max)
 }
 
-// Init initilizes the region struct.
 func (r *Region) Init(winding maths.WindingOrder, Min, Max maths.Pt) *Region {
-	//log.Println("Creating new clipping region ", Min, Max)
 	r.winding = winding
-	//r.List.Init()
 	r.max = Max
 	r.min = Min
 	var pts [4][2]float64
 	if winding == maths.Clockwise {
-		/*
-			  Clockwise
-
-			   MinX,MinY    1   MaxX,MinY
-					1pt   _____  2pt
-					     |     |
-					   0 |     | 2
-					     |_____|
-					0pt     3    3pt
-			   MinX,MaxY       MaxX,MaxY
-		*/
 		pts = [4][2]float64{
 			{Min.X, Max.Y},
 			{Min.X, Min.Y},
@@ -73,17 +31,6 @@ func (r *Region) Init(winding maths.WindingOrder, Min, Max maths.Pt) *Region {
 		}
 		r.aDownOrRight = [4]bool{false, true, true, false}
 	} else {
-		/*
-			  Counter Clockwise
-
-			   MinX,MinY    3   MaxX,MinY
-					0pt   _____  3pt
-					     |     |
-					   0 |     | 2
-					     |_____|
-					1pt     1    2pt
-			   MinX,MaxY       MaxX,MaxY
-		*/
 		pts = [4][2]float64{{Min.X, Min.Y}, {Min.X, Max.Y}, {Max.X, Max.Y}, {Max.X, Min.Y}}
 		r.aDownOrRight = [4]bool{true, true, false, false}
 	}
@@ -130,19 +77,13 @@ func (r *Region) SentinalPoints() (pts []maths.Pt) {
 	return pts
 }
 
-// Intersect holds the intersect point and the direction of the vector it's on. Into or out of the clipping region.
 type Intersect struct {
-	// Pt is the intersect point.
-	Pt maths.Pt
-	// Is the vector this point is on heading into the region.
-	Inward bool
-	// Index of the Axis this point was found on.
+	Pt        maths.Pt
+	Inward    bool
 	Idx       int
 	isNotZero bool
 }
 
-// Intersections returns zero to four intersections points.
-// You should remove any duplicate and cancelling intersections points afterwards.
 func (r *Region) Intersections(l maths.Line) (out []Intersect, Pt1Placement, Pt2Placement PlacementCode) {
 	pt1, pt2 := l[0], l[1]
 

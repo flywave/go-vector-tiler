@@ -4,11 +4,10 @@ import (
 	"errors"
 	"log"
 
+	"github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
-	"github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
-// ErrInvalidCoordsNumber is the error produced when the number of coordinates provided is not even or large enough to from a linestring.
 var ErrInvalidCoordsNumber = errors.New("Event number of coords expected.")
 
 type Subject struct {
@@ -65,10 +64,9 @@ func (s *Subject) GetPair(idx int) *Pair {
 	return p
 }
 
-// Contains will test to see if the point if fully contained by the subject. If the point is on the broader it is not considered as contained.
 func (s *Subject) Contains(pt maths.Pt) bool {
 
-	line := maths.Line{pt, maths.Pt{pt.X - 1, pt.Y}}
+	line := maths.Line{pt, maths.Pt{X: pt.X - 1, Y: pt.Y}}
 	count := 0
 	var lpt maths.Pt
 	var haveLpt bool
@@ -78,13 +76,10 @@ func (s *Subject) Contains(pt maths.Pt) bool {
 			ipt = ipt.Truncate()
 			if haveLpt {
 				if lpt.IsEqual(ipt) {
-					// skip repeat intersections points. These may be an intersection point that lies on the end pt.
 					continue
 				}
 			}
-			//log.Println("Got Intersect ", count, ipt, pline.InBetween(ipt) && ipt.X < pt.X, pt.X, pline)
 
-			// We only care about intersect points that are left of the point being tested.
 			if pline.InBetween(ipt) && ipt.X < pt.X {
 				count++
 			}
@@ -96,6 +91,5 @@ func (s *Subject) Contains(pt maths.Pt) bool {
 
 	log.Println("Contains Count:", count)
 
-	// If it's odd then it's inside of the polygon, otherwise it's outside of the polygon.
 	return count%2 != 0
 }

@@ -2,7 +2,6 @@ package basic
 
 import "fmt"
 
-// G is used to pass back a generic Geometry type. It will contains functions to do basic conversions.
 type G struct {
 	Geometry
 }

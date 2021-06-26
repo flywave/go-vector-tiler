@@ -9,7 +9,7 @@ import (
 	"sort"
 	"sync"
 
-	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-geom/general"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/flywave/go-vector-tiler/maths/hitmap"
 	"github.com/flywave/go-vector-tiler/maths/makevalid/plyg"
@@ -23,8 +23,8 @@ func init() {
 }
 
 // insureConnected will add a connecting line as needed to the given polygons. If there is only one line in a polygon, it will be left alone.
-func insureConnected(polygons ...[]maths.Line) (ret [][]maths.Line) {
-	ret = make([][]maths.Line, len(polygons))
+func insureConnected(polygons ...maths.MultiLine) (ret []maths.MultiLine) {
+	ret = make([]maths.MultiLine, len(polygons))
 	for i := range polygons {
 		ln := len(polygons[i])
 		if ln == 0 {
@@ -69,7 +69,7 @@ func MinF64(vals ...float64) (min float64) {
 */
 
 // destructure2  splits the polygon into a set of segements adding the segments of the clipbox as well.
-func destructure2(polygons [][]maths.Line, clipbox *geom.Extent) []maths.Line {
+func destructure2(polygons []maths.MultiLine, clipbox *general.Extent) []maths.Line {
 	// First we need to combine all the segments.
 	segs := make(map[maths.Line]struct{})
 	for i := range polygons {
@@ -111,7 +111,7 @@ func logOutBuildRings(pt2maxy map[maths.Pt]int64, xs []float64, x2pts map[float6
 	return output
 }
 
-func plygsToBoundingBox(plygs [][]maths.Line) *geom.Extent {
+func plygsToBoundingBox(plygs []maths.MultiLine) *general.Extent {
 	var minx, miny, maxx, maxy float64
 	var init bool
 	for i := range plygs {
@@ -151,10 +151,10 @@ func plygsToBoundingBox(plygs [][]maths.Line) *geom.Extent {
 			}
 		}
 	}
-	return &geom.Extent{minx, miny, maxx, maxy}
+	return &general.Extent{minx, miny, maxx, maxy}
 }
 
-func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *geom.Extent, plygs [][]maths.Line) ([][][]maths.Pt, error) {
+func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *general.Extent, plygs []maths.MultiLine) ([]maths.Polygon, error) {
 
 	if len(plygs) == 0 {
 		return nil, nil
@@ -199,7 +199,7 @@ func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *geom.Extent, p
 
 	// Add lines at each x going from the miny to maxy.
 	for i := range xs {
-		flines = append(flines, [2][2]float64{{xs[i], clipbox.MinY()}, {xs[i], clipbox.MaxY()}})
+		flines = append(flines, [2][]float64{{xs[i], clipbox.MinY()}, {xs[i], clipbox.MaxY()}})
 	}
 
 	lines = maths.NewLinesFloat64(flines...)
@@ -301,7 +301,7 @@ func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *geom.Extent, p
 	return ploygs, nil
 }
 
-func MakeValid(ctx context.Context, hm hitmap.Interface, extent *geom.Extent, plygs ...[]maths.Line) (polygons [][][]maths.Pt, err error) {
+func MakeValid(ctx context.Context, hm hitmap.Interface, extent *general.Extent, plygs ...maths.MultiLine) (polygons []maths.Polygon, err error) {
 	/*
 		var bb *geom.BoundingBox
 		if extent != nil {

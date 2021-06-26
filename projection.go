@@ -8,6 +8,6 @@ const (
 )
 
 var (
-	WebMercatorBounds = &dvec3.Box{dvec3.T{-20026376.39, -20048966.10, 0}, dvec3.T{20026376.39, 20048966.10, 0}}
-	WGS84Bounds       = &dvec3.Box{dvec3.T{-180.0, -85.0511, 0}, dvec3.T{180.0, 85.0511, 0}}
+	WebMercatorBounds = &dvec3.Box{Min: dvec3.T{-20026376.39, -20048966.10, 0}, Max: dvec3.T{20026376.39, 20048966.10, 0}}
+	WGS84Bounds       = &dvec3.Box{Min: dvec3.T{-180.0, -85.0511, 0}, Max: dvec3.T{180.0, 85.0511, 0}}
 )

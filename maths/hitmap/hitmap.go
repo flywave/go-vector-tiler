@@ -204,8 +204,8 @@ func NewSegment(label maths.Label, linestring geom.LineString) (seg Segment) {
 	j := len(subpts) - 1
 	for i := range subpts {
 		l := maths.Line{
-			maths.Pt{subpts[j].X(), subpts[j].Y()},
-			maths.Pt{subpts[i].X(), subpts[i].Y()},
+			maths.Pt{X: subpts[j].X(), Y: subpts[j].Y()},
+			maths.Pt{X: subpts[i].X(), Y: subpts[i].Y()},
 		}
 		seg.bbox.Add(l[:]...)
 		seg.events.Add(l)
@@ -297,19 +297,15 @@ func NewFromMultiPolygon(mp geom.MultiPolygon) (hm M) {
 func NewFromGeometry(g geom.Geometry) (hm M) {
 	switch gg := g.(type) {
 	case geom.Polygon:
-		//log.Printf("returning hitmap: hitmap.NewFromPolygon(\n%#v\n)", gg)
 		return NewFromPolygon(gg)
 	case geom.MultiPolygon:
-		//log.Printf("returning hitmap: hitmap.NewFromMultiPolygon(\n%#v\n)", gg)
 		return NewFromMultiPolygon(gg)
 	default:
-		//log.Println("Returning default hm")
 		return hm
 	}
 }
 
-// NewFromLines creates a new hitmap where the first ring (made up of lines) is considered inside. The others if there are any are considered outside.
-func NewFromLines(ln [][]maths.Line) (hm M) {
+func NewFromLines(ln []maths.MultiLine) (hm M) {
 	hm.s = make([]Segment, len(ln))
 	hm.s[0] = NewSegmentFromLines(maths.Inside, ln[0])
 	for i := range ln[1:] {

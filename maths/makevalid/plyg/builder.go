@@ -38,14 +38,8 @@ func (b *Builder) CurrentRing() (ring Ring, x1 float64, y1s []YPart, x2 float64,
 	ring.Points = make([]maths.Pt, 0, len(b.parts[0])+len(b.parts[1]))
 	var pts []maths.Pt
 	pts = append(pts, b.parts[0]...)
-	// For the tracing part later own. We are going to start with the upper left most point.
-	// First need to reverse b.parts[0]
-	// Say we have for col1 (0,2),(0,3),(0,4),(0,5)
-	// For col2 (1,2),(1,4),(1,5)
+
 	points.Reverse(pts)
-	// we should now have: (0,5),(0,4),(0,3),(0,2)
-	//
-	// we want (0,2), (1,2),(1,4),(1,5),(0,5),(0,4),(0,3)
 
 	ring.Points = []maths.Pt{pts[len(pts)-1]}
 
@@ -57,10 +51,8 @@ func (b *Builder) CurrentRing() (ring Ring, x1 float64, y1s []YPart, x2 float64,
 	plen := len(ring.Points)
 	if plen > 3 {
 		switch {
-		// Let's check the second to last pt, last pt, and the first pt to see if the last point can be dropped.
 		case slopeCheck(ring.Points[plen-2], ring.Points[plen-1], ring.Points[0], x1, x2):
 			ring.Points = ring.Points[:plen-1]
-			// Let's check the  last pt, and the first two pts to see if the first point can be dropped.
 		case slopeCheck(ring.Points[plen-1], ring.Points[0], ring.Points[1], x1, x2):
 			ring.Points = ring.Points[1:]
 		}
@@ -92,7 +84,6 @@ func (b *Builder) AddPts(l maths.Label, pts1, pts2 []maths.Pt) (ring Ring, x1 fl
 	if b == nil {
 		return ring, x1, y1s, x2, y2s, false
 	}
-	// Change in label means new ring to work on.
 	if b.label == l {
 		if len(pts1) > 1 && !b.parts[0][len(b.parts[0])-1].IsEqual(pts1[1]) {
 
@@ -103,7 +94,6 @@ func (b *Builder) AddPts(l maths.Label, pts1, pts2 []maths.Pt) (ring Ring, x1 fl
 		}
 		return ring, x1, y1s, x2, y2s, false
 	}
-	// If the current ring does not have any points in it, then just create a New ring
 	new = len(b.parts[0]) != 0 && len(b.parts[1]) != 0
 	if new {
 		ring, x1, y1s, x2, y2s = b.CurrentRing()

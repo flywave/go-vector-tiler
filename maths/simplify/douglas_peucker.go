@@ -4,8 +4,6 @@ import (
 	"github.com/flywave/go-vector-tiler/maths"
 )
 
-// DouglasPeucker is a geometry simplifcation routine
-// https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
 func DouglasPeucker(points []maths.Pt, tolerance float64) []maths.Pt {
 	if tolerance <= 0 || len(points) <= 2 {
 		return points
@@ -13,7 +11,6 @@ func DouglasPeucker(points []maths.Pt, tolerance float64) []maths.Pt {
 
 	epsilon := tolerance * tolerance
 
-	// find the maximum distance from the end points.
 	l := maths.Line{points[0], points[len(points)-1]}
 	dmax := 0.0
 	idx := 0

@@ -5,16 +5,6 @@ import (
 	"strings"
 )
 
-/*
-
-   basic.Line{ // len(1000); direction: Counter-Clockwise.
-      {100,100}, {100,010}, … // 0 - 40
-      … // 40 …
-   }
-
-
-*/
-
 const DefaultPointFormat = "{%06f,%06f}, "
 
 func DefaultPointDecorator(pt Point) string { return fmt.Sprintf(DefaultPointFormat, pt[0], pt[1]) }
@@ -43,13 +33,13 @@ func (l Line) GoStringTypeDecorated(withType bool, indent int, lineComment strin
 
 		if (i+1)%numberOfPointsPerLine == 0 {
 			bytestr = append(bytestr, []rune(fmt.Sprintf(pointLineFormat, indentString, string(byteString), lastI+1, i))...)
-			byteString = byteString[:0] // truncate string.
+			byteString = byteString[:0]
 			lastI = i
 		}
 	}
 	if len(byteString) > 0 {
 		bytestr = append(bytestr, []rune(fmt.Sprintf(pointLineFormat, indentString, string(byteString), lastI+1, len(l)-1))...)
-		byteString = byteString[:0] // truncate string.
+		byteString = byteString[:0]
 	}
 
 	return fmt.Sprintf(lineFormat, indentString, typeName, len(l), l.Direction(), lineComment, string(bytestr), indentString)
@@ -60,11 +50,6 @@ func (l Line) GoStringTyped(withType bool, indent int, lineComment string) strin
 
 func (l Line) GoString() string { return l.GoStringTyped(true, 0, "") }
 
-/*
-basic.Polygon { // basic.Polygon len(1);
-   { lines… },
-}
-*/
 func (p Polygon) GoStringTypeDecorated(withType bool, indent int, lineComment string, pointDecorator func(pt Point) string) string {
 	const (
 		polygonFormat = "%v%v{ // basic.Polygon len(%06d)%v.\n%v\n%v}"

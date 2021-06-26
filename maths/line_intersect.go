@@ -12,9 +12,9 @@ const (
 )
 
 type event struct {
-	edge     int       // the index number of the edge in the segment list.
-	edgeType eventType // Is this the left or right edge.
-	ev       *Pt       // event vertex
+	edge     int
+	edgeType eventType
+	ev       *Pt
 }
 
 func (e *event) Point() *Pt {
@@ -36,14 +36,11 @@ func (a XYOrderedEventPtr) Len() int           { return len(a) }
 func (a XYOrderedEventPtr) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a XYOrderedEventPtr) Less(i, j int) bool { return XYOrder(*(a[i].ev), *(a[j].ev)) == -1 }
 
-// Code adapted from http://geomalgorithms.com/a09-_intersect-3.html#simple_Polygon()
 func NewEventQueue(segments []Line) []event {
-
 	ne := len(segments) * 2
 
 	eq := make([]event, ne)
 
-	// Initialize event queue with edge segment endpoints
 	for i := range segments {
 		idx := 2 * i
 		eq[idx].edge = i
@@ -62,12 +59,9 @@ func NewEventQueue(segments []Line) []event {
 	return eq
 }
 
-// DoesIntersect does a quick intersect check using the saddle method.
 func findinter_doesNotIntersect(s1x0, s1y0, s1x1, s1y1, s2x0, s2y0, s2x1, s2y1 float64) bool {
-
 	var swap float64
 
-	// Put line 1 points in order.
 	if s1x0 > s1x1 {
 		swap = s1x0
 		s1x0 = s1x1
@@ -87,7 +81,6 @@ func findinter_doesNotIntersect(s1x0, s1y0, s1x1, s1y1, s2x0, s2y0, s2x1, s2y1 f
 			s1y1 = swap
 		}
 	}
-	// Put line 2 points in order.
 	if s2x0 > s2x1 {
 		swap = s2x0
 		s2x0 = s2x1
@@ -119,28 +112,18 @@ func findinter_doesNotIntersect(s1x0, s1y0, s1x1, s1y1, s2x0, s2y0, s2x1, s2y1 f
 
 }
 
-// DoesIntersect does a quick intersect check using the saddle method.
 func DoesIntersect(s1, s2 Line) bool {
-
-	// Put line 1 points in order.
 	switch {
 	case s1[0].X > s1[1].X:
 		s1[0].X, s1[0].Y, s1[1].X, s1[1].Y = s1[1].X, s1[1].Y, s1[0].X, s1[0].Y
 	case s1[0].X < s1[1].X:
-		// Do Nothing.
-
-		// Otherwise X's are same, time to look at Y's.
 	case s1[0].Y > s1[1].Y:
 		s1[0].X, s1[0].Y, s1[1].X, s1[1].Y = s1[1].X, s1[1].Y, s1[0].X, s1[0].Y
 	}
-	// Put line 2 points in order.
 	switch {
 	case s2[0].X > s2[1].X:
 		s2[0].X, s2[0].Y, s2[1].X, s2[1].Y = s2[1].X, s2[1].Y, s2[0].X, s2[0].Y
 	case s2[0].X < s2[1].X:
-		// Do Nothing.
-
-		// Otherwise X's are same, time to look at Y's.
 	case s2[0].Y > s2[1].Y:
 		s2[0].X, s2[0].Y, s2[1].X, s2[1].Y = s2[1].X, s2[1].Y, s2[0].X, s2[0].Y
 	}
@@ -168,16 +151,12 @@ func FindIntersectsWithEventQueue(polygonCheck bool, eq []event, segments []Line
 		_, ok := isegmap[ev.edge]
 
 		if !ok {
-			// have not seen this edge, let's add it to our list.
 			isegmap[ev.edge] = val
 			continue
 		}
 
-		// We have reached the end of a segment.
-		// This is the left edge.
 		delete(isegmap, ev.edge)
 		if len(isegmap) == 0 {
-			// no segments to test.
 			continue
 		}
 		edge := segments[ev.edge]
@@ -194,7 +173,7 @@ func FindIntersectsWithEventQueue(polygonCheck bool, eq []event, segments []Line
 				continue
 			}
 			if polygonCheck && (src == ev.edge || dest == s) {
-				continue // no non-simple intersect since consecutive
+				continue
 			}
 
 			sedge := segments[s]
@@ -202,15 +181,6 @@ func FindIntersectsWithEventQueue(polygonCheck bool, eq []event, segments []Line
 				continue
 			}
 
-			/*
-				ptfn := func() Pt {
-					// Finding the intersect is cpu costly, so wrap it in a function so that if one does not
-					// need the intersect the work can be ignored.
-					// TODO:gdey — Is this really true? We should profile this to see if this is something that is needed or premature optimaization.
-					pt, _ := Intersect(edge, sedge)
-					return pt
-				}
-			*/
 			src, dest = ev.edge, s
 			if src > dest {
 				src, dest = dest, src
@@ -232,18 +202,14 @@ func FindIntersectsWithEventQueueWithoutIntersectNew(polygonCheck bool, eq []eve
 		edgeidx := eq[i].edge
 
 		if isegmap[edgeidx] < 2 {
-			// have not seen this edge, let's add it to our list.
 			isegmap[edgeidx] = 1
 			haveSeenAll++
 			continue
 		}
 
-		// We have reached the end of a segment.
-		// This is the left edge.
 		isegmap[edgeidx] = 2
 		haveSeenAll--
 		if haveSeenAll == 0 {
-			// no segments to test.
 			continue
 		}
 
@@ -261,7 +227,7 @@ func FindIntersectsWithEventQueueWithoutIntersectNew(polygonCheck bool, eq []eve
 			}
 
 			if polygonCheck && (src == edgeidx || dest == s) {
-				continue // no non-simple intersect since consecutive
+				continue
 			}
 
 			if !DoesIntersect(segments[edgeidx], segments[s]) {
@@ -287,25 +253,19 @@ func FindIntersectsWithEventQueueWithoutIntersect(polygonCheck bool, eq []event,
 
 	for i := range eq {
 		edgeidx := eq[i].edge
-		//_, ok := isegmap[ev.edge]
 
 		if !isegmap[edgeidx] {
-			// have not seen this edge, let's add it to our list.
 			isegmap[edgeidx] = true
 			seenEdgeCount++
 			continue
 		}
 
-		// We have reached the end of a segment.
-		// This is the left edge.
 		isegmap[edgeidx] = false
 		seenEdgeCount--
 		if seenEdgeCount <= 0 {
 			seenEdgeCount = 0
-			// no segments to test.
 			continue
 		}
-		//edge := segments[ev.edge]
 
 		for s, sv := range isegmap {
 
@@ -321,10 +281,9 @@ func FindIntersectsWithEventQueueWithoutIntersect(polygonCheck bool, eq []event,
 			}
 
 			if polygonCheck && (src == edgeidx || dest == s) {
-				continue // no non-simple intersect since consecutive
+				continue
 			}
 
-			//sedge := segments[s]
 			if !DoesIntersect(segments[edgeidx], segments[s]) {
 				continue
 			}
@@ -352,19 +311,15 @@ func FindIntersectsWithEventQueueWithoutIntersectNotPolygon(eq []event, segments
 		edgeidx := eq[i].edge
 
 		if !isegmap[edgeidx] {
-			// have not seen this edge, let's add it to our list.
 			isegmap[edgeidx] = true
 			seenEdgeCount++
 			continue
 		}
 
-		// We have reached the end of a segment.
-		// This is the left edge.
 		isegmap[edgeidx] = false
 		seenEdgeCount--
 		if seenEdgeCount <= 0 {
 			seenEdgeCount = 0
-			// no segments to test.
 			continue
 		}
 
@@ -398,19 +353,15 @@ func FindAllIntersectsWithEventQueueWithoutIntersectNotPolygon(eq []event, segme
 		edgeidx = eq[i].edge
 
 		if !isegmap[edgeidx] {
-			// have not seen this edge, let's add it to our list.
 			isegmap[edgeidx] = true
 			seenEdgeCount++
 			continue
 		}
 
-		// We have reached the end of a segment.
-		// This is the left edge.
 		isegmap[edgeidx] = false
 		seenEdgeCount = seenEdgeCount - 1
 		if seenEdgeCount <= 0 {
 			seenEdgeCount = 0
-			// no segments to test.
 			continue
 		}
 
@@ -443,31 +394,18 @@ func FindAllIntersectsWithEventQueueWithoutIntersectNotPolygon(eq []event, segme
 	return
 }
 
-// FindIntersects call the provided function with the indexs of the lines from the segments slice that intersect with each other. If the function returns false, it will stop iteration.
-// To find the intersection point call the ptfn that is passed to the call back.
 func FindIntersectsWithoutIntersect(segments []Line, fn func(srcIdx, destIdx int) bool) {
 	eq := NewEventQueue(segments)
 	FindIntersectsWithEventQueueWithoutIntersectNotPolygon(eq, segments, fn)
 	return
 }
 
-// FindIntersects call the provided function with the indexs of the lines from the segments slice that intersect with each other. If the function returns false, it will stop iteration.
-// To find the intersection point call the ptfn that is passed to the call back.
 func FindIntersects(segments []Line, fn func(srcIdx, destIdx int, ptfn func() Pt) bool) {
-	/*
-		ns := len(segments)
-		if ns < 3 {
-			return
-		}
-	*/
 	eq := NewEventQueue(segments)
 	FindIntersectsWithEventQueue(false, eq, segments, fn)
 	return
 }
 
-// FindPolygonIntersects calls the provided function with the indexes of the lines from the segments slice that intersect with each other. If the function returns false, it will stop iteration.
-// To find the intersection point call the ptfn that is passed to the call back.
-// The function assumes that the the segments are consecutive.
 func FindPolygonIntersects(segments []Line, fn func(srcIdx, destIdx int, ptfn func() Pt) bool) {
 	ns := len(segments)
 	if ns < 3 {
@@ -478,14 +416,11 @@ func FindPolygonIntersects(segments []Line, fn func(srcIdx, destIdx int, ptfn fu
 	return
 }
 
-//  =================================== LINE methods ================================================= //
 func (s1 Line) DoesIntersect(s2 Line) bool {
 	return DoesIntersect(s1, s2)
 }
 
-// IntersectsLines call fn with line, and intersect point that the line intersects with. from the given set of lines that intersect this line and their intersect points.
 func (l Line) IntersectsLines(lines []Line, fn func(idx int) bool) {
-
 	if len(lines) == 0 {
 		return
 	}
@@ -496,8 +431,6 @@ func (l Line) IntersectsLines(lines []Line, fn func(idx int) bool) {
 		return
 	}
 
-	// We are going to be using the sweep line method to find intersect points. We are going to modify this method, a bit.
-	// We want the line we are trying to find an intersection against as line 0 always. This makes it easy to identify when we don't have to keep looking.
 	eq := NewEventQueue(append([]Line{l}, lines...))
 	var val struct{}
 
@@ -506,48 +439,35 @@ func (l Line) IntersectsLines(lines []Line, fn func(idx int) bool) {
 	for _, ev := range eq {
 
 		if _, ok := isegmap[ev.edge]; !ok {
-			// have not seen this edge, let's add it to our list.
 			isegmap[ev.edge] = val
 			continue
 		}
 
-		// We have reached the end of a segment.
-		// This is the left edge.
 		delete(isegmap, ev.edge)
 		if len(isegmap) == 0 {
-			// no segments to test.
 			continue
 		}
 
-		// Main edge is always zero
 		if ev.edge == 0 {
-			// Look through the edges in our map, comparing it to the main line, as we came to end of the main line.
 			for s := range isegmap {
 				if !l.DoesIntersect(lines[s-1]) {
 					continue
 				}
-				// We found an intersect, let someone know.
 				if !fn(s - 1) {
 					return
 				}
 			}
-			// We are done with the main edge, don't care if the other intersect.
 			return
 		}
 
-		// Is the main line in the edge map, if not we don't care if there are any intersects with this line.
 		if _, ok := isegmap[0]; !ok {
 			continue
 		}
 
-		// Let's see if there is an intersect with the main edge.
 		if !l.DoesIntersect(lines[ev.edge-1]) {
-			// Nope, let's move on.
 			continue
 		}
-		// Yes, let some know.
 		if !fn(ev.edge - 1) {
-			// They want us to stop.
 			return
 		}
 		continue

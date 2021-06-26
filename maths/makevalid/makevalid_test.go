@@ -9,19 +9,19 @@ import (
 	"reflect"
 	"testing"
 
-	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-geom/general"
+	"github.com/flywave/go-vector-tiler/draw/svg"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/flywave/go-vector-tiler/maths/hitmap"
 	"github.com/gdey/tbltest"
-	"github.com/go-spatial/tegola/draw/svg"
 	"github.com/go-test/deep"
 )
 
 const TileBuffer = 16
 
-var extent = geom.NewExtent(
-	[2]float64{0.0 - TileBuffer, 0.0 - TileBuffer},
-	[2]float64{4096.0 + TileBuffer, 4096.0 + TileBuffer},
+var extent = general.NewExtent(
+	[]float64{0.0 - TileBuffer, 0.0 - TileBuffer},
+	[]float64{4096.0 + TileBuffer, 4096.0 + TileBuffer},
 )
 
 func TestSortUniqueF64(t *testing.T) {
@@ -96,7 +96,7 @@ func _createFile(basedir, filename string) (file *os.File, err error) {
 	return os.Create(filepath.Join(basedir, filename))
 }
 
-func _drawMakeValidPolygons(w io.Writer, original [][]maths.Line, expectedPolygon, gotPolygon [][][]maths.Pt) {
+func _drawMakeValidPolygons(w io.Writer, original []maths.MultiLine, expectedPolygon, gotPolygon []maths.Polygon) {
 	mm := svg.MinMax{0 - TileBuffer, 0 - TileBuffer, 4096 + TileBuffer, 4096 + TileBuffer}
 	for i := range original {
 		mm.OfGeometry(original[i])
@@ -158,7 +158,7 @@ func _drawMakeValidPolygons(w io.Writer, original [][]maths.Line, expectedPolygo
 
 }
 
-func drawMakeValidTestCase(basedir string, filename string, original [][]maths.Line, expectedPolygon, gotPolygon [][][]maths.Pt) error {
+func drawMakeValidTestCase(basedir string, filename string, original []maths.MultiLine, expectedPolygon, gotPolygon []maths.Polygon) error {
 	file, err := _createFile(basedir, filename)
 	if err != nil {
 		return err
@@ -171,8 +171,8 @@ func drawMakeValidTestCase(basedir string, filename string, original [][]maths.L
 func TestMakeValid(t *testing.T) {
 
 	type tcase struct {
-		lines    [][]maths.Line
-		polygons [][][]maths.Pt
+		lines    []maths.MultiLine
+		polygons []maths.Polygon
 		err      error
 	}
 	ctx := context.Background()
@@ -218,7 +218,7 @@ func TestMakeValid(t *testing.T) {
 
 	test := tbltest.Cases(
 		tcase{
-			lines: [][]maths.Line{
+			lines: []maths.MultiLine{
 				{
 					{maths.Pt{3, 1}, maths.Pt{7, 1}},
 					{maths.Pt{7, 1}, maths.Pt{7, 6}},
@@ -232,14 +232,14 @@ func TestMakeValid(t *testing.T) {
 					{maths.Pt{5, 4}, maths.Pt{4, 4}},
 				},
 			},
-			polygons: [][][]maths.Pt{
+			polygons: []maths.Polygon{
 				{
 					[]maths.Pt{{3, 1}, {7, 1}, {7, 6}, {5, 6}, {5, 4}, {4, 4}, {4, 6}, {3, 6}},
 				},
 			},
 		},
 		tcase{
-			lines: [][]maths.Line{{
+			lines: []maths.MultiLine{{
 				{maths.Pt{X: 2784, Y: 960}, maths.Pt{X: 2838, Y: 994}},
 				{maths.Pt{X: 2838, Y: 994}, maths.Pt{X: 2853, Y: 975}},
 				{maths.Pt{X: 2853, Y: 975}, maths.Pt{X: 2856, Y: 975}},
@@ -269,7 +269,7 @@ func TestMakeValid(t *testing.T) {
 				{maths.Pt{X: 2818, Y: 910}, maths.Pt{X: 2784, Y: 960}},
 			}},
 
-			polygons: [][][]maths.Pt{
+			polygons: []maths.Polygon{
 				{
 					[]maths.Pt{{2734, 934}, {2735, 933}, {2739, 930}, {2759, 943}, {2763, 946}, {2759, 945}, {2739, 937}, {2735, 936}},
 				},
@@ -285,7 +285,7 @@ func TestMakeValid(t *testing.T) {
 			},
 		},
 		tcase{
-			lines: [][]maths.Line{{
+			lines: []maths.MultiLine{{
 				{maths.Pt{50, 66}, maths.Pt{104, 100}},
 				{maths.Pt{104, 100}, maths.Pt{119, 81}},
 				{maths.Pt{119, 81}, maths.Pt{122, 81}},
@@ -314,7 +314,7 @@ func TestMakeValid(t *testing.T) {
 				{maths.Pt{77, 0}, maths.Pt{84, 16}},
 				{maths.Pt{84, 16}, maths.Pt{50, 66}},
 			}},
-			polygons: [][][]maths.Pt{
+			polygons: []maths.Polygon{
 
 				{
 					[]maths.Pt{{0, 40}, {1, 39}, {5, 36}, {25, 49}, {29, 52}, {25, 51}, {5, 43}, {1, 42}},
@@ -379,7 +379,7 @@ func BenchmarkSortUniqueF64_worstCase(b *testing.B) {
 }
 
 func BenchmarkMakeValid5PolyA(b *testing.B) {
-	lines := [][]maths.Line{
+	lines := []maths.MultiLine{
 		{
 			maths.Line{maths.Pt{50, 66}, maths.Pt{104, 100}},
 			maths.Line{maths.Pt{104, 100}, maths.Pt{119, 81}},
@@ -419,7 +419,7 @@ func BenchmarkMakeValid5PolyA(b *testing.B) {
 	}
 }
 func BenchmarkMakeValid5PolyB(b *testing.B) {
-	lines := [][]maths.Line{
+	lines := []maths.MultiLine{
 		{
 			maths.Line{maths.Pt{X: 2784, Y: 960}, maths.Pt{X: 2838, Y: 994}},
 			maths.Line{maths.Pt{X: 2838, Y: 994}, maths.Pt{X: 2853, Y: 975}},
@@ -458,11 +458,11 @@ func BenchmarkMakeValid5PolyB(b *testing.B) {
 	}
 }
 
-var resultPolygon [][][]maths.Pt
+var resultPolygon []maths.Polygon
 
 func BenchmarkMakeValid5PolyC(b *testing.B) {
 
-	lines := [][]maths.Line{
+	lines := []maths.MultiLine{
 		{
 			{maths.Pt{X: 40393, Y: 60595}, maths.Pt{X: 40414, Y: 60603}},
 			{maths.Pt{X: 40414, Y: 60603}, maths.Pt{X: 40424, Y: 60604}},
@@ -4004,7 +4004,7 @@ func BenchmarkMakeValid5PolyC(b *testing.B) {
 	hm := hitmap.NewFromLines(lines)
 
 	b.ReportAllocs()
-	var nresultPolygon [][][]maths.Pt
+	var nresultPolygon []maths.Polygon
 	ctx := context.Background()
 	for n := 0; n < b.N; n++ {
 		nresultPolygon, _ = MakeValid(ctx, &hm, extent, lines...)

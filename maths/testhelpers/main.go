@@ -24,12 +24,10 @@ func LoadLines(r io.Reader) (lines []maths.Line) {
 	for scanner.Scan() {
 		txt := scanner.Text()
 		if strings.Index(txt, "#") == 0 {
-			// This is a comment. skip
 			continue
 		}
 		vals := validXY.FindAllStringIndex(txt, -1)
 		if len(vals) < 4 {
-			// skip lines with less then four points.
 			continue
 		}
 		stridx := validXY.FindAllStringIndex(txt, -1)
@@ -40,8 +38,6 @@ func LoadLines(r io.Reader) (lines []maths.Line) {
 			str := txt[stridx[i][0]:stridx[i][1]]
 			k := strings.Index(str, ":")
 			if k == -1 {
-				// should never happen.
-				panic(fmt.Sprintln("Did not find `:` in [", str, "] part of:", txt))
 				continue
 			}
 
@@ -86,6 +82,7 @@ func LoadLines(r io.Reader) (lines []maths.Line) {
 	}
 	return lines
 }
+
 func LoadLinesFromFile(filename string) []maths.Line {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -99,5 +96,4 @@ func LoadLinesFromFile(filename string) []maths.Line {
 func TestLoadLines(t *testing.T) {
 	lines := LoadLinesFromFile("testdata/test1.txt")
 	fmt.Println("lines:", lines)
-
 }

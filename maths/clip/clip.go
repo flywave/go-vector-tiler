@@ -22,19 +22,16 @@ func (b byxy) Less(i, j int) bool {
 	return b[i][1] < b[j][1]
 }
 
-// IntersectPt returns the intersect point if one exists.
 func intersectPt(clipbox *gen.Extent, ln [2][]float64) (pts [][]float64, ok bool) {
 	lln := maths.NewLineWith2Float64(ln)
 loop:
 	for _, edge := range clipbox.Edges(nil) {
 		eln := maths.NewLineWith2Float64(edge)
 		if pt, ok := maths.Intersect(eln, lln); ok {
-			// Only add if the point is actually on the line segment.
 			if !eln.InBetween(pt) || !lln.InBetween(pt) {
 				continue loop
 			}
 
-			// Only add if we have not see this point.
 			for i := range pts {
 				if pts[i][0] == pt.X && pts[i][1] == pt.Y {
 					continue loop
@@ -62,7 +59,7 @@ func LineString(linestr geom.LineString, extent *gen.Extent) (ls []basic.Line, e
 	for i := 1; i < len(line); i++ {
 		cptIsIn := extent.ContainsPoint(line[i])
 		switch {
-		case !lptIsIn && cptIsIn: // We are entering the extent region.
+		case !lptIsIn && cptIsIn:
 			if ipts, ok := intersectPt(extent, [2][]float64{line[i-1], line[i]}); ok && len(ipts) > 0 {
 				if len(ipts) == 1 {
 
@@ -80,10 +77,8 @@ func LineString(linestr geom.LineString, extent *gen.Extent) (ls []basic.Line, e
 
 			}
 			cpts = append(cpts, line[i])
-		case !lptIsIn && !cptIsIn: // Both points are outside, but it's possible that they could be going straight through the regions.
+		case !lptIsIn && !cptIsIn:
 			if ipts, ok := intersectPt(extent, [2][]float64{line[i-1], line[i]}); ok && len(ipts) > 1 {
-				// If this is the case return the line
-				// We need to keep the direction.
 				isLess := gen.PointLess(line[i-1], line[i])
 				isCLess := gen.PointLess(ipts[0], ipts[1])
 				f, s := 0, 1
@@ -94,13 +89,11 @@ func LineString(linestr geom.LineString, extent *gen.Extent) (ls []basic.Line, e
 
 			}
 			cpts = cpts[:0]
-		case lptIsIn && cptIsIn: // Both points are in, just add the new point.
+		case lptIsIn && cptIsIn:
 			cpts = append(cpts, line[i])
-		case lptIsIn && !cptIsIn: // We are headed out of the region.
+		case lptIsIn && !cptIsIn:
 			if ipts, ok := intersectPt(extent, [2][]float64{line[i-1], line[i]}); ok {
 				_ = ipts
-				// It's is possible that our intersect point is the same as our lpt.
-				// if this is the case we need to ignore it.
 				lpt := cpts[len(cpts)-1]
 				for _, ipt := range ipts {
 					if ipt[0] != lpt[0] || ipt[1] != lpt[1] {
@@ -108,8 +101,6 @@ func LineString(linestr geom.LineString, extent *gen.Extent) (ls []basic.Line, e
 					}
 				}
 			}
-			// Time to add this line to our set of lines, and reset
-			// the new line.
 			ls = append(ls, basic.NewLineFrom2Float64(cpts...))
 			cpts = cpts[:0]
 		}

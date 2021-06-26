@@ -4,6 +4,7 @@ import (
 	"context"
 
 	geom "github.com/flywave/go-geom"
+	"github.com/flywave/go-geom/general"
 	"github.com/flywave/go-vector-tiler/basic"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/flywave/go-vector-tiler/maths/clip"
@@ -29,20 +30,28 @@ func CleanLinestring(g []float64) (l []float64, err error) {
 		fpts := ptsMap[pt]
 		l = append(l, pt.X, pt.Y)
 		if len(fpts) > 1 {
-			// we will need to skip a bunch of points.
 			i = fpts[len(fpts)-1]
 		}
 	}
 	return l, nil
 }
 
+func LineAsPointPairs(l geom.LineString) (pp []float64) {
+	spts := l.Subpoints()
+	pp = make([]float64, 0, len(spts)*2)
+	for _, pt := range spts {
+		pp = append(pp, pt.X(), pt.Y())
+	}
+	return pp
+}
+
 func LineStringToSegments(l geom.LineString) ([]maths.Line, error) {
-	ppln := geom.LineAsPointPairs(l)
+	ppln := LineAsPointPairs(l)
 	return maths.NewSegments(ppln)
 }
 
-func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *geom.Extent, gs ...geom.Polygon) (mp basic.MultiPolygon, err error) {
-	var plygLines [][]maths.Line
+func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *general.Extent, gs ...geom.Polygon) (mp basic.MultiPolygon, err error) {
+	var plygLines []maths.MultiLine
 	for _, g := range gs {
 		for _, l := range g.Sublines() {
 			segs, err := LineStringToSegments(l)
@@ -60,10 +69,8 @@ func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *geom.Extent, gs
 		return mp, err
 	}
 	for i := range plyPoints {
-		// Each i is a polygon. Made up of line string points.
 		var p basic.Polygon
 		for j := range plyPoints[i] {
-			// We need to transform plyPoints[i][j] into a basic.LineString.
 			nl := basic.NewLineFromPt(plyPoints[i][j]...)
 			p = append(p, nl)
 			if err := ctx.Err(); err != nil {
@@ -97,9 +104,7 @@ func scaleMultiPolygon(p geom.MultiPolygon, factor float64) (bmp basic.MultiPoly
 	return bmp
 }
 
-// CleanGeometry will apply various geoprocessing algorithems to the provided geometry.
-// the extent will be used as a clipping region. if no clipping is desired, pass in a nil extent.
-func CleanGeometry(ctx context.Context, g geom.Geometry, extent *geom.Extent) (geo geom.Geometry, err error) {
+func CleanGeometry(ctx context.Context, g geom.Geometry, extent *general.Extent) (geo geom.Geometry, err error) {
 	if g == nil {
 		return nil, nil
 	}
@@ -128,7 +133,6 @@ func CleanGeometry(ctx context.Context, g geom.Geometry, extent *geom.Extent) (g
 		var ml basic.MultiLine
 		lns := gg.Lines()
 		for i := range lns {
-			// log.Println("Clip MultiLine Buff", buff)
 			nls, err := clip.LineString(lns[i], extent)
 			if err != nil {
 				return ml, err
@@ -137,7 +141,6 @@ func CleanGeometry(ctx context.Context, g geom.Geometry, extent *geom.Extent) (g
 		}
 		return ml, nil
 	case geom.LineString:
-		// 	log.Println("Clip LineString Buff", buff)
 		nls, err := clip.LineString(gg, extent)
 		return basic.MultiLine(nls), err
 	}

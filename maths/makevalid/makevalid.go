@@ -4,12 +4,12 @@ import (
 	"context"
 	"sort"
 
+	"github.com/flywave/go-geom/general"
 	"github.com/flywave/go-vector-tiler/maths"
 	"github.com/flywave/go-vector-tiler/maths/points"
-	geom "github.com/flywave/go-geom"
 )
 
-func allCoordForPts(idx int, pts ...[2]float64) []float64 {
+func allCoordForPts(idx int, pts ...[]float64) []float64 {
 	if idx != 0 && idx != 1 {
 		panic("idx can only be 0 or 1 for x, and y")
 	}
@@ -40,10 +40,7 @@ func sortUniqueF64(fs []float64) []float64 {
 	return fs[:count+1]
 }
 
-// splitPoints will find the points amount the lines that lines should be split at.
 func splitPoints(ctx context.Context, segments []maths.Line) (pts [][]maths.Pt, err error) {
-	// For each segment we keep a list of point that that segment needs to split
-	// at.
 	pts = make([][]maths.Pt, len(segments))
 	for i := range segments {
 		pts[i] = append(pts[i], segments[i][0], segments[i][1])
@@ -52,13 +49,11 @@ func splitPoints(ctx context.Context, segments []maths.Line) (pts [][]maths.Pt, 
 	maths.FindIntersects(segments, func(src, dest int, ptfn func() maths.Pt) bool {
 
 		if ctx.Err() != nil {
-			// Want to exit early from the loop, the ctx got cancelled.
 			return false
 		}
 
 		sline, dline := segments[src], segments[dest]
 
-		// Check to see if the end points of sline and dline intersect?
 		if (sline[0].IsEqual(dline[0])) ||
 			(sline[0].IsEqual(dline[1])) ||
 			(sline[1].IsEqual(dline[0])) ||
@@ -66,7 +61,7 @@ func splitPoints(ctx context.Context, segments []maths.Line) (pts [][]maths.Pt, 
 			return true
 		}
 
-		pt := ptfn().Round() // left most point.
+		pt := ptfn().Round()
 		if !sline.InBetween(pt) || !dline.InBetween(pt) {
 			return true
 		}
@@ -78,24 +73,22 @@ func splitPoints(ctx context.Context, segments []maths.Line) (pts [][]maths.Pt, 
 		return nil, err
 	}
 	for i := range pts {
-		// Sort the items.
 		pts[i] = points.SortAndUnique(pts[i])
 	}
 	return pts, nil
 
 }
-func splitSegments(ctx context.Context, segments []maths.Line, clipbox *geom.Extent) (lns [][2][2]float64, err error) {
+func splitSegments(ctx context.Context, segments []maths.Line, clipbox *general.Extent) (lns [][2][]float64, err error) {
 	pts, err := splitPoints(ctx, segments)
 	if err != nil {
 		return nil, err
 	}
 	for _, pt := range pts {
 		for i := 1; i < len(pt); i++ {
-			ln := [2][2]float64{
+			ln := [2][]float64{
 				{pt[i-1].X, pt[i-1].Y},
 				{pt[i].X, pt[i].Y},
 			}
-			// if clipbox is provided use it to filter out the  lines.
 			if clipbox != nil && !clipbox.ContainsLine(ln) {
 				continue
 			}
@@ -105,15 +98,14 @@ func splitSegments(ctx context.Context, segments []maths.Line, clipbox *geom.Ext
 	return lns, err
 }
 
-func allPointsForSegments(segments [][2][2]float64) (pts [][2]float64) {
+func allPointsForSegments(segments [][2][]float64) (pts [][]float64) {
 	for i := range segments {
 		pts = append(pts, segments[i][0], segments[i][1])
 	}
 	return pts
 }
 
-// splitLines will split the given line segments at intersection points if they intersect at any point other then the end.
-func splitLines(ctx context.Context, segments []maths.Line, clipbox *geom.Extent) ([]maths.Line, error) {
+func splitLines(ctx context.Context, segments []maths.Line, clipbox *general.Extent) ([]maths.Line, error) {
 	lns, err := splitSegments(ctx, segments, clipbox)
 	if err != nil {
 		return nil, err

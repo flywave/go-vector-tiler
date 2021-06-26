@@ -1,8 +1,8 @@
 package intersect
 
 import (
+	"github.com/flywave/go-vector-tiler/container/singlelist/point/list"
 	"github.com/flywave/go-vector-tiler/maths"
-	"github.com/go-spatial/tegola/container/singlelist/point/list"
 )
 
 type Inbound struct {
@@ -28,7 +28,6 @@ func (ib *Inbound) Next() (nib *Inbound) {
 		if p == nil {
 			return
 		}
-		// skip elements that are not points.
 		if pt, ok = p.(*Point); !ok {
 			continue
 		}
@@ -78,40 +77,24 @@ func (ib *Inbound) Walk(fn func(idx int, pt maths.Pt) bool) {
 
 	firstInboundPoint := ib.pt
 	if ib.iseen[firstInboundPoint] {
-		// we already saw this point, let's move on.
-		//log.Printf("Already saw (%.3v) at (%p)%[2]#v  upping count(%v).", 0, firstInboundPoint, 0)
 		return
 	}
 
-	//log.Printf("Walk Looking at %#v", firstInboundPoint)
 	if !fn(0, firstInboundPoint.Point()) {
-		// log.Printf("Bailing after first point.")
 		return
 	}
 
 	ib.seen[firstInboundPoint] = true
 	ib.iseen[firstInboundPoint] = true
-	//count := 0
-	//log.Println("\n\nStarting walk:\n\n")
-	//defer log.Println("\nEnding Walk\n")
-	for i, p := 1, next(firstInboundPoint); ; i, p = i+1, next(p) {
-		// We have found the original point.
 
+	for i, p := 1, next(firstInboundPoint); ; i, p = i+1, next(p) {
 		ipp := asIntersect(p)
 		if ipp == firstInboundPoint {
-			//log.Println("Back to the beginning.\n\n\n")
 			return
 		}
 
-		//log.Printf("(%.3v)Walk Looking at %#v", i, p)
 		if ib.seen[p] {
-			/*
-				count++
-				log.Printf("Already saw (%.3v) at (%p)%[2]#v  upping count(%v).", i, p, count)
-				if count > 10 {
-			*/
 			return
-			// 		}
 		}
 
 		ib.seen[p] = true
@@ -121,11 +104,9 @@ func (ib *Inbound) Walk(fn func(idx int, pt maths.Pt) bool) {
 
 		pter, ok := p.(list.ElementerPointer)
 		if !ok {
-			// skip entries that are not points.
 			continue
 		}
 
-		//log.Printf("Looking at Point(%.3v) looking at pt(%p)%[2]v", i, p)
 		if !fn(i, pter.Point()) {
 			return
 		}
