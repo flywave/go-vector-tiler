@@ -8,6 +8,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/devork/geom v0.0.5/go.mod h1:8Wn8UNIJlX3waA51IiE8NHPWm1JFITeKJfxmYcK+hYg=
 github.com/flywave/go-geom v0.0.0-20210621141000-9fd2bbd6ac53 h1:u5lEBFTlho1Qqd9/XHr0KUCv/nNvBhA949W9RZeQ5eI=
 github.com/flywave/go-geom v0.0.0-20210621141000-9fd2bbd6ac53/go.mod h1:zBBwuspACsxCjH/Go44Ogi4hk9ie03VGSzkCbq8mCW4=
+github.com/flywave/go-geom v0.0.0-20210625071157-b0c4af004c83 h1:PW+bQMfIVt9ejlUjcKlVfyKNKBPi/Gdkf2PJkBeBrDs=
+github.com/flywave/go-geom v0.0.0-20210625071157-b0c4af004c83/go.mod h1:zBBwuspACsxCjH/Go44Ogi4hk9ie03VGSzkCbq8mCW4=
 github.com/flywave/go-geom v0.0.0-20210625084700-e226f061e321 h1:iWFhbyymHp6nSo3bnBr9vv6PL2UBJuGZbNZtWPC1b5w=
 github.com/flywave/go-geom v0.0.0-20210625084700-e226f061e321/go.mod h1:zBBwuspACsxCjH/Go44Ogi4hk9ie03VGSzkCbq8mCW4=
 github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290 h1:d/Quyfh7G/2QqZzsNsZTbgA5c5hUwngwVoGTmj/43BU=

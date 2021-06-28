@@ -111,5 +111,4 @@ func splitLines(ctx context.Context, segments []maths.Line, clipbox *general.Ext
 		return nil, err
 	}
 	return maths.NewLinesFloat64(lns...), nil
-
 }

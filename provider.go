@@ -1,5 +1,6 @@
 package tile
 
 type Provider interface {
-	GetDdataByTile(*Tile) []*Layer
+	GetDataByTile(*Tile) []*Layer
+	GetSrid() uint64
 }
