@@ -18,9 +18,9 @@ const (
 )
 
 type Tile struct {
-	Z         uint
-	X         uint
-	Y         uint
+	Z         uint32
+	X         uint32
+	Y         uint32
 	Lat       float64
 	Long      float64
 	Extent    float64
