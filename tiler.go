@@ -30,33 +30,38 @@ type Tiler struct {
 	Provider   Provider
 }
 
-func (m *Tiler) Tiler(zoom []uint32, cb func(*Tile, []*Layer)) {
+func (m *Tiler) SkipTile(x, y, z uint32) {
+	m.Grid.SkipTile(x, y, z)
+}
+
+func (m *Tiler) Tiler(z uint32, cb func(*Tile, []*Layer) error) {
 	ctx := context.Background()
-	for _, z := range zoom {
-		ts := m.Grid.Iterator(z)
-		for _, t := range ts {
-			ls := m.Provider.GetDataByTile(t)
-			var res []*Layer
-			for _, l := range ls {
-				newLayer := &Layer{Name: l.Name}
-				for _, f := range l.Features {
-					g := f.Geometry
-					if m.Provider.GetSrid() != WebMercator {
-						g, _ = basic.ToWebMercator(m.Provider.GetSrid(), f.Geometry)
-					}
-					if z < uint32(simplificationMaxZoom) && simplifyGeometries {
-						g = simplify.SimplifyGeometry(g, t.ZEpislon())
-					}
-					g = PrepareGeo(g, t.extent, float64(m.TileExtent))
-					pbb, _ := t.PixelBufferedBounds()
-					clipRegion := gen.NewExtent([]float64{pbb[0], pbb[1]}, []float64{pbb[2], pbb[3]})
-					g, _ = validate.CleanGeometry(ctx, g, clipRegion)
-					f.Geometry = g
-					newLayer.Features = append(newLayer.Features, f)
+	ts := m.Grid.Iterator(z)
+	for _, t := range ts {
+		ls := m.Provider.GetDataByTile(t)
+		var res []*Layer
+		for _, l := range ls {
+			newLayer := &Layer{Name: l.Name}
+			for _, f := range l.Features {
+				g := f.Geometry
+				if m.Provider.GetSrid() != WebMercator {
+					g, _ = basic.ToWebMercator(m.Provider.GetSrid(), f.Geometry)
 				}
-				res = append(res, newLayer)
+				if z < uint32(simplificationMaxZoom) && simplifyGeometries {
+					g = simplify.SimplifyGeometry(g, t.ZEpislon())
+				}
+				g = PrepareGeo(g, t.extent, float64(m.TileExtent))
+				pbb, _ := t.PixelBufferedBounds()
+				clipRegion := gen.NewExtent([]float64{pbb[0], pbb[1]}, []float64{pbb[2], pbb[3]})
+				g, _ = validate.CleanGeometry(ctx, g, clipRegion)
+				f.Geometry = g
+				newLayer.Features = append(newLayer.Features, f)
 			}
-			cb(t, res)
+			res = append(res, newLayer)
+		}
+		err := cb(t, res)
+		if err != nil {
+			return
 		}
 	}
 }

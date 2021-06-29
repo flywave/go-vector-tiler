@@ -2,6 +2,7 @@ package tile
 
 import (
 	"errors"
+	"fmt"
 	"math"
 
 	gen "github.com/flywave/go-geom/general"
@@ -59,6 +60,10 @@ func NewTileLatLong(z uint, lat, lon float64) (t *Tile) {
 	t.X, t.Y = uint(x), uint(y)
 	t.Init()
 	return t
+}
+
+func (t *Tile) ToString() string {
+	return fmt.Sprintf("%d.%d.%d", t.X, t.Y, t.Z)
 }
 
 func (t *Tile) Init() {
