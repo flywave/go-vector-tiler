@@ -3,8 +3,8 @@ package basic
 import (
 	"log"
 
-	gvt "github.com/flywave/go-vector-tiler"
 	"github.com/flywave/go-vector-tiler/maths"
+	"github.com/flywave/go-vector-tiler/util"
 )
 
 func (l Line) IsValid() bool {
@@ -19,7 +19,7 @@ func (l Line) IsValid() bool {
 	for i, pt1 := range l[:len(l)-2] {
 		inpt0 := l[i+1]
 		for _, inpt1 := range l[i+2 : endj] {
-			if gvt.IsPointEqual(pt0, inpt0) && gvt.IsPointEqual(pt1, inpt1) {
+			if util.IsPointEqual(pt0, inpt0) && util.IsPointEqual(pt1, inpt1) {
 				continue
 			}
 			l1, l2 := maths.Line{pt0.AsPt(), pt1.AsPt()}, maths.Line{inpt0.AsPt(), inpt1.AsPt()}

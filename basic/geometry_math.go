@@ -9,8 +9,8 @@ import (
 	geom "github.com/flywave/go-geom"
 	gen "github.com/flywave/go-geom/general"
 
-	gvt "github.com/flywave/go-vector-tiler"
 	"github.com/flywave/go-vector-tiler/maths/webmercator"
+	"github.com/flywave/go-vector-tiler/util"
 )
 
 func ApplyToPoints(geometry geom.Geometry, f func(coords ...float64) ([]float64, error)) (geom.Geometry, error) {
@@ -146,10 +146,10 @@ func CloneGeometry(geometry geom.Geometry) (geom.Geometry, error) {
 func ToWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
-		return nil, fmt.Errorf("don't know how to convert from %v to %v.", gvt.WebMercator, SRID)
-	case gvt.WebMercator:
+		return nil, fmt.Errorf("don't know how to convert from %v to %v.", util.WebMercator, SRID)
+	case util.WebMercator:
 		return CloneGeometry(geometry)
-	case gvt.WGS84:
+	case util.WGS84:
 		return ApplyToPoints(geometry, webmercator.PToXY)
 	}
 }
@@ -157,10 +157,10 @@ func ToWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 func FromWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
-		return nil, fmt.Errorf("don't know how to convert from %v to %v.", SRID, gvt.WebMercator)
-	case gvt.WebMercator:
+		return nil, fmt.Errorf("don't know how to convert from %v to %v.", SRID, util.WebMercator)
+	case util.WebMercator:
 		return CloneGeometry(geometry)
-	case gvt.WGS84:
+	case util.WGS84:
 		return ApplyToPoints(geometry, webmercator.PToLonLat)
 	}
 }

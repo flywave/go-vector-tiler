@@ -7,6 +7,7 @@ import (
 
 	gen "github.com/flywave/go-geom/general"
 	"github.com/flywave/go-vector-tiler/maths/webmercator"
+	"github.com/flywave/go-vector-tiler/util"
 )
 
 const (
@@ -136,9 +137,9 @@ func toWebMercator(srid int, pt [2]float64) (npt [2]float64, err error) {
 	switch srid {
 	default:
 		return npt, errors.New("error")
-	case WebMercator:
+	case util.WebMercator:
 		return pt, nil
-	case WGS84:
+	case util.WGS84:
 		tnpt, err := webmercator.PToXY(pt[0], pt[1])
 		if err != nil {
 			return npt, err
@@ -151,9 +152,9 @@ func fromWebMercator(srid int, pt [2]float64) (npt [2]float64, err error) {
 	switch srid {
 	default:
 		return npt, errors.New("error")
-	case WebMercator:
+	case util.WebMercator:
 		return pt, nil
-	case WGS84:
+	case util.WGS84:
 		tnpt, err := webmercator.PToLonLat(pt[0], pt[1])
 		if err != nil {
 			return npt, err

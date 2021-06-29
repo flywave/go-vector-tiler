@@ -1,4 +1,4 @@
-package tile
+package util
 
 import dvec3 "github.com/flywave/go3d/float64/vec3"
 

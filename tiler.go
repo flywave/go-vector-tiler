@@ -7,6 +7,7 @@ import (
 	"github.com/flywave/go-vector-tiler/basic"
 	"github.com/flywave/go-vector-tiler/maths/simplify"
 	"github.com/flywave/go-vector-tiler/maths/validate"
+	"github.com/flywave/go-vector-tiler/util"
 )
 
 var (
@@ -44,7 +45,7 @@ func (m *Tiler) Tiler(z uint32, cb func(*Tile, []*Layer) error) {
 			newLayer := &Layer{Name: l.Name}
 			for _, f := range l.Features {
 				g := f.Geometry
-				if m.Provider.GetSrid() != WebMercator {
+				if m.Provider.GetSrid() != util.WebMercator {
 					g, _ = basic.ToWebMercator(m.Provider.GetSrid(), f.Geometry)
 				}
 				if z < uint32(simplificationMaxZoom) && simplifyGeometries {

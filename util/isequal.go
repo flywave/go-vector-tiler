@@ -1,4 +1,4 @@
-package tile
+package util
 
 import geom "github.com/flywave/go-geom"
 
