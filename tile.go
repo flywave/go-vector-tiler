@@ -33,7 +33,7 @@ type Tile struct {
 }
 
 // NewTile will return a non-nil tile object.
-func NewTile(z, x, y uint) (t *Tile) {
+func NewTile(z, x, y uint32) (t *Tile) {
 	t = &Tile{
 		Z:         z,
 		X:         x,
@@ -48,7 +48,7 @@ func NewTile(z, x, y uint) (t *Tile) {
 }
 
 // NewTileLatLong will return a non-nil tile object.
-func NewTileLatLong(z uint, lat, lon float64) (t *Tile) {
+func NewTileLatLong(z uint32, lat, lon float64) (t *Tile) {
 	t = &Tile{
 		Z:         z,
 		Lat:       lat,
@@ -58,7 +58,7 @@ func NewTileLatLong(z uint, lat, lon float64) (t *Tile) {
 		Tolerance: DefaultEpislon,
 	}
 	x, y := t.Deg2Num()
-	t.X, t.Y = uint(x), uint(y)
+	t.X, t.Y = uint32(x), uint32(y)
 	t.Init()
 	return t
 }
@@ -190,7 +190,7 @@ func (t *Tile) PixelBufferedBounds() (bounds [4]float64, err error) {
 }
 
 // Returns web mercator zoom level
-func (t *Tile) ZLevel() uint {
+func (t *Tile) ZLevel() uint32 {
 	return t.Z
 }
 
