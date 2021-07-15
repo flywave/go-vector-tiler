@@ -40,10 +40,10 @@ func (g *MercGrid) Iterator(z uint32) []*Tile {
 	}
 	lvlCount := math.Pow(2, float64(z))
 	span := webmercator.MaxXExtent * 2 / lvlCount
-	minx := math.Floor(g.Bounds[0] / span)
-	miny := math.Floor(g.Bounds[1] / span)
-	maxx := math.Ceil(g.Bounds[2] / span)
-	maxy := math.Ceil(g.Bounds[3] / span)
+	minx := math.Floor((g.Bounds[0] + webmercator.MaxXExtent) / span)
+	miny := math.Floor((webmercator.MaxXExtent - g.Bounds[1]) / span)
+	maxx := math.Ceil((g.Bounds[2] + webmercator.MaxXExtent) / span)
+	maxy := math.Ceil((webmercator.MaxXExtent - g.Bounds[3]) / span)
 	ts := []*Tile{}
 
 	if g.currentZ != nil && z == *g.currentZ {
