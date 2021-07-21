@@ -23,11 +23,14 @@ const (
 	Rad2Deg     = 180 / math.Pi
 	PiDiv2      = math.Pi / 2.0
 	PiDiv4      = math.Pi / 4.0
-	MinXExtent  = -20026376.39
-	MinYExtent  = -20048966.10
-	MaxXExtent  = 20026376.39
-	MaxYExtent  = 20048966.10
+
+	M_PIby360           = math.Pi / 360
+	EARTH_CIRCUMFERENCE = EarthRadius * 2 * math.Pi
+	MAXEXTENT           = EARTH_CIRCUMFERENCE / 2.0
+	MAXEXTENTby180      = MAXEXTENT / 180
 )
+
+var MAX_LATITUDE = Rad2Deg * (2*math.Atan(math.Exp(180*Deg2Rad)) - PiDiv2)
 
 var Extent = [4]float64{MinXExtent, MinYExtent, MaxXExtent, MaxYExtent}
 
@@ -54,25 +57,28 @@ func con(phi float64) float64 {
 	return math.Pow(((1.0 - v) / (1.0 + v)), Com)
 }
 
-//LonToX converts from a Longitude to a X coordinate in WebMercator.
 func LonToX(lon float64) float64 {
 	return RMajor * DegToRad(lon)
 }
 
-// LatToY converts from Latitude to a Y coordinate in WebMercator.
 func LatToY(lat float64) float64 {
-	lat = math.Min(89.5, math.Max(lat, -89.5))
-	phi := DegToRad(lat)
-	ts := math.Tan(0.5*((math.Pi*0.5)-phi)) / con(phi)
-	return 0 - RMajor*math.Log(ts)
+	lat = math.Min(MAX_LATITUDE, math.Max(lat, -MAX_LATITUDE))
+	y := math.Log(math.Tan((90+lat)*M_PIby360)) * Rad2Deg
+	y = y * MAXEXTENTby180
+	return y
 }
 
-// XToLon converts from X coordinate in WebMercator to Lontitude in WGS84
+var (
+	MaxXExtent = LonToX(180)
+	MaxYExtent = LatToY(MAX_LATITUDE)
+	MinXExtent = -MaxXExtent
+	MinYExtent = -MaxYExtent
+)
+
 func XToLon(x float64) float64 {
 	return RadToDeg(x) / RMajor
 }
 
-// YToLat converts from Y coordinate in WebMercator to Latitude in WGS84
 func YToLat(y float64) float64 {
 	ts := math.Exp(-y / RMajor)
 	phi := PiDiv2 - 2*math.Atan(ts)
@@ -86,7 +92,6 @@ func YToLat(y float64) float64 {
 	return RadToDeg(phi)
 }
 
-// ToLonLat given a set of coordinates (x,y) it will convert them to Lon/Lat coordinates. If more then x,y is given (i.e. z, and m) they will be returned untransformed.
 func ToLonLat(c ...float64) ([]float64, error) {
 	if len(c) < 2 {
 		return c, fmt.Errorf("Coords should have at least 2 coords")
@@ -96,7 +101,6 @@ func ToLonLat(c ...float64) ([]float64, error) {
 	return crds, nil
 }
 
-// ToXY given a set of coordinates (lon,lat) it will convert them to X,Y coordinates. If more then lon/lat is given (i.e. z, and m) they will be returned untransformed.
 func ToXY(c ...float64) ([]float64, error) {
 	if len(c) < 2 {
 		return c, fmt.Errorf("Coords should have at least 2 coords")

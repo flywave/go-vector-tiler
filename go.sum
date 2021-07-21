@@ -14,6 +14,8 @@ github.com/flywave/go-geom v0.0.0-20210625084700-e226f061e321 h1:iWFhbyymHp6nSo3
 github.com/flywave/go-geom v0.0.0-20210625084700-e226f061e321/go.mod h1:zBBwuspACsxCjH/Go44Ogi4hk9ie03VGSzkCbq8mCW4=
 github.com/flywave/go-geom v0.0.0-20210628091419-7d55414ca1d3 h1:Rr+qIjM7fEAUegZGLor5a4xQusJlARpppCLemI1O5oA=
 github.com/flywave/go-geom v0.0.0-20210628091419-7d55414ca1d3/go.mod h1:zBBwuspACsxCjH/Go44Ogi4hk9ie03VGSzkCbq8mCW4=
+github.com/flywave/go-geom v0.0.0-20210705081559-eee15cf4b503 h1:OkIVs0M32d9LDKfOHtFxFo6pckBsia+yCQAyp5fj2/c=
+github.com/flywave/go-geom v0.0.0-20210705081559-eee15cf4b503/go.mod h1:zBBwuspACsxCjH/Go44Ogi4hk9ie03VGSzkCbq8mCW4=
 github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290 h1:d/Quyfh7G/2QqZzsNsZTbgA5c5hUwngwVoGTmj/43BU=
 github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290/go.mod h1:QbQZlarSgCPYFAmoTduiDUd4JCnolimXUswTAnSrFWY=
 github.com/gdey/tbltest v0.0.0-20180914212833-1865222d591f h1:eqGnktl65l0bBrqFWtWVdwrV1B8vRKpucSarJBRWEEs=
