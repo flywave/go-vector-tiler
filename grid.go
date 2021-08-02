@@ -30,8 +30,8 @@ func NewGrid(bound *general.Extent, srs string) *Grid {
 	if bound == nil {
 		bound = &general.Extent{webmercator.MinXExtent, webmercator.MinYExtent, webmercator.MaxXExtent, webmercator.MaxYExtent}
 	} else {
-		p1 := proj.NewProj(srs)
-		p2 := proj.NewProj(GMERC_PROJ4)
+		p1, _ := proj.NewProj(srs)
+		p2, _ := proj.NewProj(GMERC_PROJ4)
 		tran, _ := proj.NewTransformation(p1, p2)
 		x := []float64{bound[0], bound[2]}
 		y := []float64{bound[1], bound[3]}

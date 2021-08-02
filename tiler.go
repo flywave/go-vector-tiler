@@ -15,9 +15,9 @@ var (
 	simplificationMaxZoom uint = 10
 )
 
-func NewWebMercatorTiler(bound *gen.Extent, pro Provider) *Tiler {
+func NewTiler(g *Grid, pro Provider) *Tiler {
 	return &Tiler{
-		Grid:       NewMercGrid(bound),
+		Grid:       g,
 		TileExtent: 32768,
 		TileBuffer: 64,
 		Provider:   pro,
@@ -27,7 +27,7 @@ func NewWebMercatorTiler(bound *gen.Extent, pro Provider) *Tiler {
 type Tiler struct {
 	TileExtent uint64
 	TileBuffer uint64
-	Grid       Grid
+	Grid       *Grid
 	Provider   Provider
 }
 
