@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/flywave/go-geom/general"
-	"github.com/flywave/go-proj"
 	proj "github.com/flywave/go-proj"
 	"github.com/flywave/go-vector-tiler/maths/webmercator"
 )
@@ -33,6 +32,12 @@ func NewGrid(bound *general.Extent, srs string) *Grid {
 		p1, _ := proj.NewProj(srs)
 		p2, _ := proj.NewProj(GMERC_PROJ4)
 		tran, _ := proj.NewTransformation(p1, p2)
+		if p1.IsLatLong() {
+			bound[0] = proj.DegToRad(bound[0])
+			bound[1] = proj.DegToRad(bound[1])
+			bound[2] = proj.DegToRad(bound[2])
+			bound[3] = proj.DegToRad(bound[3])
+		}
 		x := []float64{bound[0], bound[2]}
 		y := []float64{bound[1], bound[3]}
 		x, y, _, _ = tran.Transform(x, y, nil)
@@ -55,18 +60,19 @@ func (g *Grid) Iterator(z uint32) []*Tile {
 	}
 	lvlCount := math.Pow(2, float64(z))
 	span := webmercator.MaxXExtent * 2 / lvlCount
-	minx := math.Floor(g.Bounds[0] / span)
-	miny := math.Floor(g.Bounds[1] / span)
-	maxx := math.Ceil(g.Bounds[2] / span)
-	maxy := math.Ceil(g.Bounds[3] / span)
+
+	minx := uint32((g.Bounds[0] + webmercator.MaxXExtent) / span)
+	miny := uint32((webmercator.MaxYExtent - g.Bounds[3]) / span)
+	maxx := uint32(((g.Bounds[2] + webmercator.MaxXExtent) / span)) + 1
+	maxy := uint32((webmercator.MaxYExtent-g.Bounds[1])/span) + 1
 	ts := []*Tile{}
 
 	if g.currentZ != nil && z == *g.currentZ {
 		if g.currentX != nil {
-			minx = float64(*g.currentX)
+			minx = *g.currentX
 		}
 		if g.currentY != nil {
-			miny = float64(*g.currentY)
+			miny = *g.currentY
 		}
 	}
 	for x := minx; x < maxx; x++ {

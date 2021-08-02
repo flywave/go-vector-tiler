@@ -40,6 +40,9 @@ func (m *Tiler) Tiler(z uint32, cb func(*Tile, []*Layer) error) {
 	ts := m.Grid.Iterator(z)
 	for _, t := range ts {
 		ls := m.Provider.GetDataByTile(t)
+		if ls == nil && len(ls) == 0 {
+			continue
+		}
 		var res []*Layer
 		for _, l := range ls {
 			newLayer := &Layer{Name: l.Name}

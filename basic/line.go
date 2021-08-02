@@ -24,7 +24,9 @@ func (l Line) AsPts() []maths.Pt {
 func (l Line) Data() [][]float64 {
 	ps := [][]float64{}
 	for _, ll := range l {
-		ps = append(ps, ll[:])
+		p := make([]float64, len(ll))
+		copy(p, ll[:])
+		ps = append(ps, p)
 	}
 	return ps
 }
