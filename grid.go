@@ -54,10 +54,7 @@ func (g *Grid) Count(zs []uint32) int {
 	return c
 }
 
-func (g *Grid) Iterator(z uint32) []*Tile {
-	if g.currentZ != nil && z < *g.currentZ {
-		return nil
-	}
+func (g *Grid) TileBounds(z uint32) (uint32, uint32, uint32, uint32) {
 	lvlCount := math.Pow(2, float64(z))
 	span := webmercator.MaxXExtent * 2 / lvlCount
 
@@ -65,8 +62,15 @@ func (g *Grid) Iterator(z uint32) []*Tile {
 	miny := uint32((webmercator.MaxYExtent - g.Bounds[3]) / span)
 	maxx := uint32(((g.Bounds[2] + webmercator.MaxXExtent) / span)) + 1
 	maxy := uint32((webmercator.MaxYExtent-g.Bounds[1])/span) + 1
-	ts := []*Tile{}
+	return minx, miny, maxx, maxy
+}
 
+func (g *Grid) Iterator(z uint32) []*Tile {
+	if g.currentZ != nil && z < *g.currentZ {
+		return nil
+	}
+	minx, miny, maxx, maxy := g.TileBounds(z)
+	ts := []*Tile{}
 	if g.currentZ != nil && z == *g.currentZ {
 		if g.currentX != nil {
 			minx = *g.currentX
