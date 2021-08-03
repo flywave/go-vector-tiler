@@ -18,16 +18,16 @@ type Grid struct {
 	currentZ *uint32
 }
 
-func NewMercGrid(bound *general.Extent) *Grid {
+func NewMercGrid(bound *[4]float64) *Grid {
 	if bound == nil {
-		bound = &general.Extent{webmercator.MinXExtent, webmercator.MinYExtent, webmercator.MaxXExtent, webmercator.MaxYExtent}
+		bound = &[4]float64{webmercator.MinXExtent, webmercator.MinYExtent, webmercator.MaxXExtent, webmercator.MaxYExtent}
 	}
-	return &Grid{Bounds: bound}
+	return &Grid{Bounds: (*general.Extent)(bound)}
 }
 
-func NewGrid(bound *general.Extent, srs string) *Grid {
+func NewGrid(bound *[4]float64, srs string) *Grid {
 	if bound == nil {
-		bound = &general.Extent{webmercator.MinXExtent, webmercator.MinYExtent, webmercator.MaxXExtent, webmercator.MaxYExtent}
+		bound = &[4]float64{webmercator.MinXExtent, webmercator.MinYExtent, webmercator.MaxXExtent, webmercator.MaxYExtent}
 	} else {
 		p1, _ := proj.NewProj(srs)
 		p2, _ := proj.NewProj(GMERC_PROJ4)
@@ -41,9 +41,9 @@ func NewGrid(bound *general.Extent, srs string) *Grid {
 		x := []float64{bound[0], bound[2]}
 		y := []float64{bound[1], bound[3]}
 		x, y, _, _ = tran.Transform(x, y, nil)
-		bound = &general.Extent{x[0], y[0], x[1], y[1]}
+		bound = &[4]float64{x[0], y[0], x[1], y[1]}
 	}
-	return &Grid{Bounds: bound}
+	return &Grid{Bounds: (*general.Extent)(bound)}
 }
 
 func (g *Grid) Count(zs []uint32) int {
