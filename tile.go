@@ -126,11 +126,11 @@ func Tile2Lat(y, z uint64) float64 {
 
 // Bounds returns the bounds of the Tile as defined by the North most Longitude, East most Latitude, South most Longitude, West most Latitude.
 func (t *Tile) Bounds() [4]float64 {
-	north := Tile2Lon(uint64(t.X), uint64(t.Z))
-	east := Tile2Lat(uint64(t.Y), uint64(t.Z))
-	south := Tile2Lon(uint64(t.X+1), uint64(t.Z))
-	west := Tile2Lat(uint64(t.Y+1), uint64(t.Z))
-	return [4]float64{north, east, south, west}
+	west := Tile2Lon(uint64(t.X), uint64(t.Z))
+	north := Tile2Lat(uint64(t.Y), uint64(t.Z))
+	east := Tile2Lon(uint64(t.X+1), uint64(t.Z))
+	south := Tile2Lat(uint64(t.Y+1), uint64(t.Z))
+	return [4]float64{west, south, east, north}
 }
 
 func toWebMercator(srid int, pt [2]float64) (npt [2]float64, err error) {
