@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 
 	gen "github.com/flywave/go-geom/general"
 	"github.com/flywave/go-vector-tiler/maths/webmercator"
@@ -30,6 +32,18 @@ type Tile struct {
 	Tolerance float64
 	xspan     float64
 	yspan     float64
+}
+
+func XYZFromStringId(id string) (uint32, uint32, uint32) {
+	xyz := strings.Split(id, ".")
+	x, _ := strconv.ParseInt(xyz[0], 10, 32)
+	y, _ := strconv.ParseInt(xyz[1], 10, 32)
+	z, _ := strconv.ParseInt(xyz[2], 10, 32)
+	return uint32(x), uint32(y), uint32(z)
+}
+
+func XYZToStringId(x, y, z uint32) string {
+	return fmt.Sprintf("%d.%d.%d", x, y, z)
 }
 
 // NewTile will return a non-nil tile object.
