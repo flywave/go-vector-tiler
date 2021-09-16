@@ -13,20 +13,21 @@ type Grid struct {
 	currentX *uint32
 	currentY *uint32
 	currentZ *uint32
+	bbox     *vec2d.Rect
 }
 
 func NewGrid(bound *[4]float64, srs string) *Grid {
 	conf := geo.DefaultTileGridOptions()
 	conf[geo.TILEGRID_BBOX_SRS] = srs
 	conf[geo.TILEGRID_SRS] = GMERC_PROJ4
-	conf[geo.TILEGRID_BBOX] = &vec2d.Rect{Min: vec2d.T{bound[0], bound[1]}, Max: vec2d.T{bound[2], bound[3]}}
 	grid := geo.NewTileGrid(conf)
-	return &Grid{grid: grid}
+	bbx := &vec2d.Rect{Min: vec2d.T{bound[0], bound[1]}, Max: vec2d.T{bound[2], bound[3]}}
+	return &Grid{grid: grid, bbox: bbx}
 }
 
 func (g *Grid) Count(zs []uint32) int {
 	c := 0
-	bbx := g.grid.BBox
+	bbx := g.bbox
 	for _, z := range zs {
 		_, rc, _, _ := g.grid.GetAffectedLevelTiles(*bbx, int(z))
 		c += rc[0] * rc[1]
@@ -35,19 +36,15 @@ func (g *Grid) Count(zs []uint32) int {
 }
 
 func (g *Grid) TileBounds(z uint32) (uint32, uint32, uint32, uint32) {
-	bbx := g.grid.BBox
-	rt, _, _, _ := g.grid.GetAffectedLevelTiles(*bbx, int(z))
-	return uint32(rt.Min[0]), uint32(rt.Min[1]), uint32(rt.Max[0]), uint32(rt.Max[1])
+	bbx := g.bbox
+	_, _, iter, _ := g.grid.GetAffectedLevelTiles(*bbx, int(z))
+	bd := iter.GetTileBound()
+	return bd[0], bd[1], bd[2], bd[3]
 }
 
 func (g *Grid) Iterator(z uint32) []*Tile {
 	ts := []*Tile{}
-	bbx := g.grid.BBox
-	rt, _, _, _ := g.grid.GetAffectedLevelTiles(*bbx, int(z))
-	minx := uint32(rt.Min[0])
-	miny := uint32(rt.Min[1])
-	maxx := uint32(rt.Max[0])
-	maxy := uint32(rt.Max[1])
+	minx, miny, maxx, maxy := g.TileBounds(z)
 	if g.currentZ != nil && *g.currentZ == z {
 		minx = *g.currentX
 		miny = *g.currentY
