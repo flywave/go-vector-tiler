@@ -1,6 +1,10 @@
 package tile
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+
 	"context"
 	"fmt"
 	"sync"
@@ -19,6 +23,74 @@ import (
 const WGS84_PROJ4 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 const GMERC_PROJ4 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over"
 
+// TileExporter 定义瓦片导出接口
+type TileExporter interface {
+	SaveTile(res []*Layer, tile *Tile, path string) error
+	Extension() string
+	RelativeTilePath(zoom, x, y int) string
+}
+
+// GeoJSONTileExporter GeoJSON格式导出器
+type GeoJSONTileExporter struct{}
+
+func (s *GeoJSONTileExporter) SaveTile(res []*Layer, tile *Tile, path string) error {
+	// 确保目录存在
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("创建目录失败: %w", err)
+	}
+
+	// 构建GeoJSON FeatureCollection
+	geoJSONData := map[string]interface{}{
+		"type":     "FeatureCollection",
+		"features": []interface{}{},
+		"properties": map[string]interface{}{
+			"zoom": tile.Z,
+			"x":    tile.X,
+			"y":    tile.Y,
+		},
+	}
+
+	// 遍历所有图层和要素，添加到GeoJSON
+	for _, layer := range res {
+		for _, feature := range layer.Features {
+			// 假设feature.Geometry已经是GeoJSON兼容格式
+			featureData := map[string]interface{}{
+				"type":       "Feature",
+				"geometry":   feature.Geometry,
+				"properties": feature.Properties,
+			}
+			geoJSONData["features"] = append(geoJSONData["features"].([]interface{}), featureData)
+		}
+	}
+
+	// 将GeoJSON数据写入文件
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("创建文件失败: %w", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(geoJSONData); err != nil {
+		return fmt.Errorf("编码GeoJSON失败: %w", err)
+	}
+
+	return nil
+}
+
+func (s *GeoJSONTileExporter) Extension() string {
+	return "geojson"
+}
+
+func (s *GeoJSONTileExporter) RelativeTilePath(zoom, x, y int) string {
+	return filepath.Join(fmt.Sprintf("%d", zoom), fmt.Sprintf("%d", x), fmt.Sprintf("%d.%s", y, s.Extension()))
+}
+
+// DefaultTileExporter 默认瓦片导出器
+var DefaultTileExporter TileExporter = &GeoJSONTileExporter{}
+
 // TilerConfig 配置结构体
 type TilerConfig struct {
 	Provider              Provider
@@ -33,6 +105,8 @@ type TilerConfig struct {
 	SpecificZooms         []int
 	Bound                 *[4]float64
 	SRS                   string
+	Exporter              TileExporter
+	OutputDir             string
 }
 
 // DefaultTilerConfig 默认配置
@@ -46,6 +120,8 @@ var DefaultTilerConfig = TilerConfig{
 	MaxZoom:               14,
 	SRS:                   WGS84_PROJ4,
 	Bound:                 &[4]float64{-180, -90, 180, 90},
+	Exporter:              nil,
+	OutputDir:             "./tiles",
 }
 
 // NewTiler 创建Tiler实例
@@ -73,6 +149,11 @@ func NewTiler(config *TilerConfig) *Tiler {
 		if config.Bound == nil {
 			config.Bound = &[4]float64{-180, -90, 180, 90} // 默认全球范围
 		}
+		// 设置默认输出目录
+		if config.OutputDir == "" {
+			config.OutputDir = DefaultTilerConfig.OutputDir
+		}
+		// Exporter默认为nil，将使用DefaultTileExporter
 	}
 
 	// 创建网格配置
@@ -175,55 +256,48 @@ func (m *Tiler) Stop() {
 }
 
 // Tiler 生成指定缩放级别的瓦片
-func (m *Tiler) Tiler(cb func(*Tile, []*Layer) error) error {
+func (m *Tiler) Tiler() error {
 	defer m.cancel()
 	defer close(m.errChan)
-	defer func() {
-		if m.config.Progress != nil {
-			m.config.Progress.Complete()
-		}
-	}()
 
 	// 计算总任务数
 	zooms := m.getZoomLevels()
-	var totalTasks int64
-	for _, zoom := range zooms {
-		ts := m.Iterator(uint32(zoom))
-		totalTasks += int64(len(ts))
-	}
-	m.totalTasks = totalTasks
+	totalTasks := m.count(zooms)
+	atomic.StoreInt64(&m.totalTasks, totalTasks)
 
-	// 初始化进度
 	if m.config.Progress != nil {
-		m.config.Progress.Init(int(m.totalTasks))
+		m.config.Progress.Init(int(totalTasks))
 	}
 
 	// 启动工作池
-	m.startWorkers(cb)
+	m.startWorkers()
 
 	// 生成任务
-	m.generateTasks(zooms)
+	go m.generateTasks(zooms)
 
 	// 等待所有任务完成
 	m.wg.Wait()
 
 	// 检查是否有错误发生
-	return m.firstError
+	if m.firstError != nil {
+		return fmt.Errorf("瓦片生成失败: %w", m.firstError)
+	}
+	return nil
 }
 
 // startWorkers 启动工作池
-func (m *Tiler) startWorkers(cb func(*Tile, []*Layer) error) {
+func (m *Tiler) startWorkers() {
 	for i := 0; i < m.config.Concurrency; i++ {
 		m.wg.Add(1)
 		go func() {
 			defer m.wg.Done()
-			m.worker(cb)
+			m.worker()
 		}()
 	}
 }
 
 // worker 工作函数
-func (m *Tiler) worker(cb func(*Tile, []*Layer) error) {
+func (m *Tiler) worker() {
 	for {
 		select {
 		case <-m.ctx.Done():
@@ -232,89 +306,132 @@ func (m *Tiler) worker(cb func(*Tile, []*Layer) error) {
 			if !ok {
 				return
 			}
-			m.processTile(task, cb)
+			m.processTile(task)
 		}
 	}
 }
 
-// generateTasks 生成任务
+// 计算总任务数
+func (m *Tiler) count(zooms []int) int64 {
+	var total int64
+	for _, z := range zooms {
+		minx, miny, maxx, maxy := m.TileBounds(uint32(z))
+		count := int64((maxx - minx + 1) * (maxy - miny + 1))
+		total += count
+	}
+	return total
+}
+
+// 生成任务
 func (m *Tiler) generateTasks(zooms []int) {
 	defer close(m.taskQueue)
 
 	for _, zoom := range zooms {
-		ts := m.Iterator(uint32(zoom))
+		z := uint32(zoom)
+		minx, miny, maxx, maxy := m.TileBounds(z)
 
-		for _, t := range ts {
-			select {
-			case <-m.ctx.Done():
-				return
-			case m.taskQueue <- &tileTask{z: t.Z, x: t.X, y: t.Y}:
+		for y := miny; y <= maxy; y++ {
+			for x := minx; x <= maxx; x++ {
+				select {
+				case <-m.ctx.Done():
+					return
+				case m.taskQueue <- &tileTask{z: z, x: x, y: y}:
+				}
 			}
 		}
 	}
 }
 
-// processTile 处理单个瓦片
-func (m *Tiler) processTile(task *tileTask, cb func(*Tile, []*Layer) error) {
+// 处理单个瓦片
+func (m *Tiler) processTile(task *tileTask) {
+	// 创建瓦片对象
+	t := NewTile(task.z, task.x, task.y)
+
 	// 更新进度
 	processed := atomic.AddInt64(&m.processed, 1)
 	if m.config.Progress != nil {
-		m.config.Progress.Update(int(processed), int(m.totalTasks))
-	}
-
-	// 获取瓦片
-	var t *Tile
-	tiles := m.Iterator(task.z)
-	for _, tile := range tiles {
-		if tile.X == task.x && tile.Y == task.y {
-			t = tile
-			break
-		}
-	}
-	if t == nil {
-		m.reportError(fmt.Errorf("未找到瓦片 z=%d x=%d y=%d", task.z, task.x, task.y))
-		return
-	}
-
-	// 详细日志
-	if m.config.Progress != nil {
+		m.config.Progress.Update(int(processed), int(atomic.LoadInt64(&m.totalTasks)))
 		m.config.Progress.Log(fmt.Sprintf("处理瓦片 z=%d x=%d y=%d (%d/%d)",
-			task.z, task.x, task.y, processed, m.totalTasks))
+			task.z, task.x, task.y, processed, atomic.LoadInt64(&m.totalTasks)))
 	}
 
 	// 获取数据
-	ls := m.config.Provider.GetDataByTile(t)
-	if len(ls) == 0 {
+	layers := m.config.Provider.GetDataByTile(t)
+	if len(layers) == 0 {
 		return
 	}
 
-	var res []*Layer
-	for _, l := range ls {
-		newLayer := &Layer{Name: l.Name}
-		for _, f := range l.Features {
-			g := f.Geometry
+	// 处理每个图层的要素
+	var resultLayers []*Layer
+	for _, layer := range layers {
+		newLayer := &Layer{Name: layer.Name}
+
+		for _, feature := range layer.Features {
+			geom := feature.Geometry
+
+			// 坐标转换
 			if m.config.Provider.GetSrid() != util.WebMercator {
-				g, _ = basic.ToWebMercator(m.config.Provider.GetSrid(), f.Geometry)
+				var err error
+				if geom, err = basic.ToWebMercator(m.config.Provider.GetSrid(), geom); err != nil {
+					m.reportError(fmt.Errorf("坐标转换失败 (z=%d, x=%d, y=%d): %w",
+						task.z, task.x, task.y, err))
+					continue
+				}
 			}
+
+			// 几何简化
 			if task.z < uint32(m.config.SimplificationMaxZoom) && m.config.SimplifyGeometries {
-				g = simplify.SimplifyGeometry(g, t.ZEpislon())
+				geom = simplify.SimplifyGeometry(geom, t.ZEpislon())
 			}
-			g = PrepareGeo(g, t.extent, float64(m.config.TileExtent))
+
+			// 几何预处理
+			geom = PrepareGeo(geom, t.extent, float64(m.config.TileExtent))
+
+			// 几何裁剪
 			pbb, _ := t.PixelBufferedBounds()
 			clipRegion := gen.NewExtent([]float64{pbb[0], pbb[1]}, []float64{pbb[2], pbb[3]})
-			g, _ = validate.CleanGeometry(m.ctx, g, clipRegion)
-			f.Geometry = g
-			newLayer.Features = append(newLayer.Features, f)
+			if cleaned, err := validate.CleanGeometry(m.ctx, geom, clipRegion); err == nil {
+				geom = cleaned
+			}
+
+			feature.Geometry = geom
+			newLayer.Features = append(newLayer.Features, feature)
 		}
-		res = append(res, newLayer)
+
+		if len(newLayer.Features) > 0 {
+			resultLayers = append(resultLayers, newLayer)
+		}
 	}
 
-	// 调用回调函数
-	err := cb(t, res)
-	if err != nil {
-		m.reportError(fmt.Errorf("处理瓦片失败: %w", err))
-		return
+	// 导出瓦片
+	if len(resultLayers) > 0 {
+		if err := m.exportTile(resultLayers, t); err != nil {
+			m.reportError(fmt.Errorf("导出瓦片失败 (z=%d, x=%d, y=%d): %w",
+				task.z, task.x, task.y, err))
+		}
 	}
+}
+
+// 导出瓦片
+func (m *Tiler) exportTile(layers []*Layer, t *Tile) error {
+	exporter := m.config.Exporter
+	if exporter == nil {
+		exporter = DefaultTileExporter
+	}
+
+	if exporter == nil {
+		return nil // 没有导出器配置
+	}
+
+	path := exporter.RelativeTilePath(int(t.Z), int(t.X), int(t.Y))
+	fullPath := filepath.Join(m.config.OutputDir, path)
+
+	// 确保目录存在
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+		return fmt.Errorf("创建目录失败: %w", err)
+	}
+
+	return exporter.SaveTile(layers, t, fullPath)
 }
 
 // reportError 报告错误
