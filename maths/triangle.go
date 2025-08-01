@@ -8,15 +8,6 @@ import (
 	"time"
 )
 
-func trace(msg string) func() {
-	tracer := time.Now()
-	log.Println(msg, "started at:", tracer)
-	return func() {
-		etracer := time.Now()
-		log.Println(msg, "ElapsedTime in seconds:", etracer.Sub(tracer))
-	}
-}
-
 const adjustBBoxBy = 10
 
 type Triangle [3]Pt
@@ -41,7 +32,7 @@ func (t *Triangle) FindEdge(e Line) (idx int, err error) {
 		return 2, nil
 	}
 
-	return -1, errors.New("Edge not on triangle.")
+	return -1, errors.New("edge not on triangle")
 
 }
 
@@ -306,7 +297,7 @@ func (tg *TriangleGraph) Outside() []*TriangleNode {
 	return r
 }
 
-func simplifyNumberOfLines(lines []Line) (sln []Line) {
+func SimplifyNumberOfLines(lines []Line) (sln []Line) {
 	var m1, m2 float64
 	var ok1, ok2 bool
 	if len(lines) <= 2 {
@@ -419,7 +410,7 @@ func (t ByXYLine) Less(i, j int) bool {
 
 func PointPairs(pts []Pt) ([][2]Pt, error) {
 	if len(pts) <= 1 {
-		return nil, fmt.Errorf("Not enough pts to make pairs.")
+		return nil, fmt.Errorf("not enough pts to make pairs")
 	}
 	n := len(pts)
 	switch n {
@@ -537,9 +528,9 @@ func destructure(polygons [][]Line) (lines []Line) {
 	return lines
 }
 
-type aNodeList map[[2]Pt]*TriangleNode
+type ANodeList map[[2]Pt]*TriangleNode
 
-func (nl aNodeList) AddTriangleForPts(pt1, pt2, pt3 Pt, fnIsConstrained func(pt1, pt2 Pt) bool) (tri *TriangleNode, err error) {
+func (nl ANodeList) AddTriangleForPts(pt1, pt2, pt3 Pt, fnIsConstrained func(pt1, pt2 Pt) bool) (tri *TriangleNode, err error) {
 
 	var fn = func(pt1, pt2 Pt) bool { return false }
 
@@ -569,7 +560,7 @@ func (nl aNodeList) AddTriangleForPts(pt1, pt2, pt3 Pt, fnIsConstrained func(pt1
 				continue
 			}
 			if node.Neighbors[k].Node != nil {
-				return nil, fmt.Errorf("More then two triangles are sharing an edge. \n\t%+v\n\t%v\n\t%+v\n\t %v %v %v", node, k, node.Neighbors[k].Node, pt1, pt2, pt3)
+				return nil, fmt.Errorf("more then two triangles are sharing an edge. \n\t%+v\n\t%v\n\t%+v\n\t %v %v %v", node, k, node.Neighbors[k].Node, pt1, pt2, pt3)
 			}
 			node.Neighbors[k].Node = tri
 		}
@@ -891,11 +882,6 @@ func (em *EdgeMap) Triangulate() {
 	}
 }
 func (em *EdgeMap) FindTriangles() (*TriangleGraph, error) {
-	type triEdge struct {
-		edge        int
-		tri         string
-		constrained bool
-	}
 	var nodesToLabel []*TriangleNode
 	nodes := make(map[string]*TriangleNode)
 	seenPts := make(map[Pt]bool)

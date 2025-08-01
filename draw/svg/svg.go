@@ -87,7 +87,6 @@ func (canvas *Canvas) DrawRegion(withGrid bool) {
 }
 
 func (canvas *Canvas) DrawPolygon(p geom.Polygon, id string, style string, pointStyle string, drawPoints bool) int {
-	var points []maths.Pt
 	canvas.Group(`id="`+id+`"`, `style="opacity:1"`)
 	canvas.Gid("polygon_path")
 	path := ""
@@ -106,7 +105,6 @@ func (canvas *Canvas) DrawPolygon(p geom.Polygon, id string, style string, point
 			continue
 		}
 		for i, pt := range pts[:idx] {
-			points = append(points, maths.Pt{X: pt.X(), Y: pt.Y()})
 			if i == 0 {
 				path += "M "
 			} else {

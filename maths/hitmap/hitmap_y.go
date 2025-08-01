@@ -2,7 +2,7 @@ package hitmap
 
 import "github.com/flywave/go-vector-tiler/maths"
 
-type segEventY struct {
+type SegEventY struct {
 	x1         int64 // float64
 	y1         float64
 	x2         int64 // float64
@@ -12,21 +12,21 @@ type segEventY struct {
 	isMDefined bool
 }
 
-type segEventsY []segEventY
+type SegEventsY []SegEventY
 
-func (se segEventsY) Len() int { return len(se) }
-func (se segEventsY) Less(i, j int) bool {
+func (se SegEventsY) Len() int { return len(se) }
+func (se SegEventsY) Less(i, j int) bool {
 	if se[i].y1 == se[j].y1 {
 		return se[i].x1 < se[j].x1
 	}
 	return se[i].y1 < se[j].y1
 }
-func (se segEventsY) Swap(i, j int) { se[i], se[j] = se[j], se[i] }
-func (se *segEventsY) Add(l maths.Line) {
+func (se SegEventsY) Swap(i, j int) { se[i], se[j] = se[j], se[i] }
+func (se *SegEventsY) Add(l maths.Line) {
 	if se == nil {
 		return
 	}
-	var ev segEventY
+	var ev SegEventY
 	if l[0].IsEqual(l[1]) {
 		return
 	}
@@ -48,7 +48,7 @@ func (se *segEventsY) Add(l maths.Line) {
 	*se = append(*se, ev)
 }
 
-func (se segEventsY) Contains(pt maths.Pt) bool {
+func (se SegEventsY) Contains(pt maths.Pt) bool {
 	var i, count int
 	var x, lx, rx int64
 	var x100, x1100, x2100 int64

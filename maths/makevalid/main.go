@@ -70,7 +70,7 @@ func logOutBuildRings(pt2maxy map[maths.Pt]int64, xs []float64, x2pts map[float6
 		output = fmt.Sprintf("xs := %#v\n", xs)
 		output += fmt.Sprintf("x2pts := %#v\n", x2pts)
 		output += fmt.Sprintf("Pt2MaxY := %#v\n", pt2maxy)
-		output += fmt.Sprintf("Cols := []struct{ idx int,  col1 []maths.Pt, col2 []maths.Pt}{")
+		output += "Cols := []struct{ idx int,  col1 []maths.Pt, col2 []maths.Pt}{"
 		for i := 0; i < len(xs)-1; i++ {
 			output += fmt.Sprintf("{idx: %[1]v, col1: %v, col2: %v}, ", i, x2pts[xs[i]], x2pts[xs[i+1]])
 		}
@@ -186,8 +186,8 @@ func destructure5(ctx context.Context, hm hitmap.Interface, cpbx *general.Extent
 	pt2MaxY := colptmap.Pt2MaxY
 
 	// Context cancelled.
-	if err := ctx.Err(); err != nil {
-		return nil, err
+	if cerr := ctx.Err(); cerr != nil {
+		return nil, cerr
 	}
 
 	var wg sync.WaitGroup
@@ -286,9 +286,9 @@ func (r byArea) Swap(i, j int) {
 	r[i], r[j] = r[j], r[i]
 }
 
-type plygByFirstPt [][][]maths.Pt
+type PlygByFirstPt [][][]maths.Pt
 
-func (p plygByFirstPt) Less(i, j int) bool {
+func (p PlygByFirstPt) Less(i, j int) bool {
 	p1 := p[i]
 	p2 := p[j]
 	if len(p1) == 0 && len(p2) != 0 {
@@ -307,10 +307,10 @@ func (p plygByFirstPt) Less(i, j int) bool {
 	return maths.XYOrder(p1[0][0], p2[0][0]) == -1
 }
 
-func (p plygByFirstPt) Len() int {
+func (p PlygByFirstPt) Len() int {
 	return len(p)
 }
-func (p plygByFirstPt) Swap(i, j int) {
+func (p PlygByFirstPt) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
 
@@ -565,15 +565,15 @@ NextLine:
 	return rpts
 }
 
-type dedupinp struct {
+type Dedupinp struct {
 	A    []maths.Pt
 	idxs []int
 }
 
-func (d dedupinp) Len() int           { return len(d.A) }
-func (d dedupinp) Less(i, j int) bool { return maths.XYOrder(d.A[d.idxs[i]], d.A[d.idxs[j]]) == -1 }
-func (d dedupinp) Swap(i, j int)      { d.idxs[i], d.idxs[j] = d.idxs[j], d.idxs[i] }
-func (d dedupinp) Dedup() {
+func (d Dedupinp) Len() int           { return len(d.A) }
+func (d Dedupinp) Less(i, j int) bool { return maths.XYOrder(d.A[d.idxs[i]], d.A[d.idxs[j]]) == -1 }
+func (d Dedupinp) Swap(i, j int)      { d.idxs[i], d.idxs[j] = d.idxs[j], d.idxs[i] }
+func (d Dedupinp) Dedup() {
 	d.idxs = make([]int, len(d.A))
 	for i := range d.idxs {
 		d.idxs[i] = i
@@ -611,7 +611,7 @@ func (d dedupinp) Dedup() {
 
 }
 
-func dedup(a []maths.Pt) {
+func Dedup(a []maths.Pt) {
 	var idxs = make([]int, len(a))
 	for i := range idxs {
 		idxs[i] = i
@@ -619,7 +619,7 @@ func dedup(a []maths.Pt) {
 
 }
 
-func fixup(pts [][]maths.Pt) {
+func Fixup(pts [][]maths.Pt) {
 	if len(pts) == 0 {
 		return
 	}

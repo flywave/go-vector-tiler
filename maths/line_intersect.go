@@ -191,8 +191,8 @@ func FindIntersectsWithEventQueue(polygonCheck bool, eq []event, segments []Line
 			}
 		}
 	}
-	return
 }
+
 func FindIntersectsWithEventQueueWithoutIntersectNew(polygonCheck bool, eq []event, segments []Line, fn func(srcIdx, destIdx int) bool) {
 	ns := len(segments)
 	isegmap := make([]uint8, ns)
@@ -243,8 +243,8 @@ func FindIntersectsWithEventQueueWithoutIntersectNew(polygonCheck bool, eq []eve
 			}
 		}
 	}
-	return
 }
+
 func FindIntersectsWithEventQueueWithoutIntersect(polygonCheck bool, eq []event, segments []Line, fn func(srcIdx, destIdx int) bool) {
 	ns := len(segments)
 
@@ -297,7 +297,6 @@ func FindIntersectsWithEventQueueWithoutIntersect(polygonCheck bool, eq []event,
 			}
 		}
 	}
-	return
 }
 
 func FindIntersectsWithEventQueueWithoutIntersectNotPolygon(eq []event, segments []Line, fn func(srcIdx, destIdx int) bool) {
@@ -340,7 +339,6 @@ func FindIntersectsWithEventQueueWithoutIntersectNotPolygon(eq []event, segments
 			}
 		}
 	}
-	return
 }
 
 func FindAllIntersectsWithEventQueueWithoutIntersectNotPolygon(eq []event, segments []Line, skipfn func(srcIdx, destIdx int) bool, fn func(srcIdx, destIdx int)) {
@@ -391,19 +389,16 @@ func FindAllIntersectsWithEventQueueWithoutIntersectNotPolygon(eq []event, segme
 			fn(edgeidx, s)
 		}
 	}
-	return
 }
 
 func FindIntersectsWithoutIntersect(segments []Line, fn func(srcIdx, destIdx int) bool) {
 	eq := NewEventQueue(segments)
 	FindIntersectsWithEventQueueWithoutIntersectNotPolygon(eq, segments, fn)
-	return
 }
 
 func FindIntersects(segments []Line, fn func(srcIdx, destIdx int, ptfn func() Pt) bool) {
 	eq := NewEventQueue(segments)
 	FindIntersectsWithEventQueue(false, eq, segments, fn)
-	return
 }
 
 func FindPolygonIntersects(segments []Line, fn func(srcIdx, destIdx int, ptfn func() Pt) bool) {
@@ -413,7 +408,6 @@ func FindPolygonIntersects(segments []Line, fn func(srcIdx, destIdx int, ptfn fu
 	}
 	eq := NewEventQueue(segments)
 	FindIntersectsWithEventQueue(true, eq, segments, fn)
-	return
 }
 
 func (s1 Line) DoesIntersect(s2 Line) bool {

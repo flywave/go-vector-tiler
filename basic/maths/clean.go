@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	geom "github.com/flywave/go-geom"
+
 	"github.com/flywave/go-vector-tiler/basic"
 	"github.com/flywave/go-vector-tiler/maths"
 )
 
-var ErrUnableToClean = fmt.Errorf("Unable to clean MultiPolygon.")
+var ErrUnableToClean = fmt.Errorf("unable to clean MultiPolygon")
 
 func cleanPolygon(p geom.Polygon) (polygons []basic.Polygon, invalids basic.Polygon) {
 	if p == nil {

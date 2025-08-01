@@ -284,9 +284,6 @@ func (l *List) FindElementBackward(start, end Elementer, finder func(e Elementer
 	if l == nil || l.len == 0 {
 		return nil
 	}
-	if l == nil || l.len == 0 {
-		return nil
-	}
 	if start == nil {
 		start = l.Back()
 	}

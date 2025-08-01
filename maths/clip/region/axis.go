@@ -61,7 +61,7 @@ func (a *Axis) Intersect(line maths.Line) (pt maths.Pt, doesIntersect bool) {
 	return pt, true
 }
 
-func (a *Axis) inside(pt maths.Pt) bool {
+func (a *Axis) Inside(pt maths.Pt) bool {
 	switch a.idx % 4 {
 	case 0:
 		return pt.X > a.pt0.X
@@ -81,7 +81,7 @@ func (a *Axis) inside(pt maths.Pt) bool {
 	return false
 }
 
-var ErrNoDirection = errors.New("Line does not have direction on that coordinate.")
+var ErrNoDirection = errors.New("line does not have direction on that coordinate")
 
 type PlacementCode uint8
 

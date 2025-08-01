@@ -8,7 +8,7 @@ import (
 	"github.com/flywave/go-vector-tiler/maths"
 )
 
-var ErrInvalidCoordsNumber = errors.New("Event number of coords expected.")
+var ErrInvalidCoordsNumber = errors.New("event number of coords expected")
 
 type Subject struct {
 	winding maths.WindingOrder

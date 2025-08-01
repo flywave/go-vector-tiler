@@ -146,7 +146,7 @@ func CloneGeometry(geometry geom.Geometry) (geom.Geometry, error) {
 func ToWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
-		return nil, fmt.Errorf("don't know how to convert from %v to %v.", util.WebMercator, SRID)
+		return nil, fmt.Errorf("don't know how to convert from %v to %v", util.WebMercator, SRID)
 	case util.WebMercator:
 		return CloneGeometry(geometry)
 	case util.WGS84:
@@ -157,7 +157,7 @@ func ToWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 func FromWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error) {
 	switch SRID {
 	default:
-		return nil, fmt.Errorf("don't know how to convert from %v to %v.", SRID, util.WebMercator)
+		return nil, fmt.Errorf("don't know how to convert from %v to %v", SRID, util.WebMercator)
 	case util.WebMercator:
 		return CloneGeometry(geometry)
 	case util.WGS84:
@@ -168,12 +168,12 @@ func FromWebMercator(SRID uint64, geometry geom.Geometry) (geom.Geometry, error)
 func interfaceAsFloatslice(v interface{}) (vals []float64, err error) {
 	vs, ok := v.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Incorrect value type looking for float64 slice, not %t.", v)
+		return nil, fmt.Errorf("incorrect value type looking for float64 slice, not %t", v)
 	}
 	for _, iv := range vs {
 		vv, ok := iv.(float64)
 		if !ok {
-			return nil, fmt.Errorf("Incorrect value type looking for float64 slice, not %t.", v)
+			return nil, fmt.Errorf("incorrect value type looking for float64 slice, not %t", v)
 		}
 		vals = append(vals, vv)
 	}
@@ -183,20 +183,20 @@ func interfaceAsFloatslice(v interface{}) (vals []float64, err error) {
 func mapIsOfType(v map[string]interface{}, wants ...string) (string, error) {
 	typ, ok := v["type"].(string)
 	if !ok {
-		return "", fmt.Errorf("Was not able to convert type to string.")
+		return "", fmt.Errorf("was not able to convert type to string")
 	}
 	for _, want := range wants {
 		if typ == want {
 			return typ, nil
 		}
 	}
-	return "", fmt.Errorf("Expected all subtypes to be one of type (%v), not %v", strings.Join(wants, ","), v["type"])
+	return "", fmt.Errorf("expected all subtypes to be one of type (%v), not %v", strings.Join(wants, ","), v["type"])
 }
 
 func interfaceAsLine(v interface{}) (Line, error) {
 	vals, err := interfaceAsFloatslice(v)
 	if err != nil {
-		return nil, fmt.Errorf("Incorrect values for line type: %v", err)
+		return nil, fmt.Errorf("incorrect values for line type: %v", err)
 	}
 	return NewLine(vals...), nil
 }
@@ -204,7 +204,7 @@ func interfaceAsLine(v interface{}) (Line, error) {
 func interfaceAsPoint(v interface{}) (Point, error) {
 	vals, err := interfaceAsFloatslice(v)
 	if err != nil {
-		return Point{}, fmt.Errorf("Incorrect values for point type: %v", err)
+		return Point{}, fmt.Errorf("incorrect values for point type: %v", err)
 	}
 	return Point{vals[0], vals[1]}, nil
 }
@@ -212,7 +212,7 @@ func interfaceAsPoint(v interface{}) (Point, error) {
 func interfaceAsPoint3(v interface{}) (Point3, error) {
 	vals, err := interfaceAsFloatslice(v)
 	if err != nil {
-		return Point3{}, fmt.Errorf("Incorrect values for point3 type: %v", err)
+		return Point3{}, fmt.Errorf("incorrect values for point3 type: %v", err)
 	}
 	return Point3{vals[0], vals[1], vals[2]}, nil
 }
@@ -220,13 +220,13 @@ func interfaceAsPoint3(v interface{}) (Point3, error) {
 func forEachMapInSlice(v interface{}, do func(typ string, v interface{}) error, wants ...string) error {
 	vals, ok := v.([]interface{})
 	if !ok {
-		return fmt.Errorf("Expected values to be []interface{}: ")
+		return fmt.Errorf("expected values to be []interface{}: ")
 	}
 	for i, iv := range vals {
 
 		v, ok := iv.(map[string]interface{})
 		if !ok {
-			return fmt.Errorf("Expected v[%v] to be map[string]interface{}: ", i)
+			return fmt.Errorf("expected v[%v] to be map[string]interface{}: ", i)
 		}
 		typ, err := mapIsOfType(v, wants...)
 		if err != nil {
@@ -315,5 +315,5 @@ func MapAsGeometry(m map[string]interface{}) (geo Geometry, err error) {
 		}
 		return ml, nil
 	}
-	return nil, errors.New("Unknown type")
+	return nil, errors.New("unknown type")
 }

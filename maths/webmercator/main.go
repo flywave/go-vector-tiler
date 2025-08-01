@@ -1,7 +1,3 @@
-/*
-Package webmercator does the translation to and from WebMercator and WGS84
-Gotten from: http://wiki.openstreetmap.org/wiki/Mercator#C.23
-*/
 package webmercator
 
 import (
@@ -34,7 +30,7 @@ var MAX_LATITUDE = Rad2Deg * (2*math.Atan(math.Exp(180*Deg2Rad)) - PiDiv2)
 
 var Extent = [4]float64{MinXExtent, MinYExtent, MaxXExtent, MaxYExtent}
 
-var ErrCoordsRequire2Values = errors.New("Coords should have at least 2 coords")
+var ErrCoordsRequire2Values = errors.New("coords should have at least 2 coords")
 
 func RadToDeg(rad float64) float64 {
 	return rad * Rad2Deg
@@ -94,7 +90,7 @@ func YToLat(y float64) float64 {
 
 func ToLonLat(c ...float64) ([]float64, error) {
 	if len(c) < 2 {
-		return c, fmt.Errorf("Coords should have at least 2 coords")
+		return c, fmt.Errorf("coords should have at least 2 coords")
 	}
 	crds := []float64{XToLon(c[0]), YToLat(c[1])}
 	crds = append(crds, c[2:]...)
@@ -103,7 +99,7 @@ func ToLonLat(c ...float64) ([]float64, error) {
 
 func ToXY(c ...float64) ([]float64, error) {
 	if len(c) < 2 {
-		return c, fmt.Errorf("Coords should have at least 2 coords")
+		return c, fmt.Errorf("coords should have at least 2 coords")
 	}
 	crds := []float64{LonToX(c[0]), LatToY(c[1])}
 	crds = append(crds, c[2:]...)

@@ -74,7 +74,6 @@ func asIntersect(p list.Elementer) *Point {
 }
 
 func (ib *Inbound) Walk(fn func(idx int, pt maths.Pt) bool) {
-
 	firstInboundPoint := ib.pt
 	if ib.iseen[firstInboundPoint] {
 		return

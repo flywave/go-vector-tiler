@@ -42,7 +42,8 @@ func checkListPointers(t *testing.T, desc string, l *List, es []*Element) {
 
 		current = current.Next()
 		if current == nil {
-			t.Errorf("%s:  pos[%[2]v] of list is nil. Uexpected %p => %p  ", desc, i, current, current.Next())
+			t.Errorf("%s: pos[%[2]v] of list is nil. Unexpected nil element", desc, i)
+			return
 		}
 	}
 }

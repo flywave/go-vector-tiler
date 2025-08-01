@@ -63,7 +63,6 @@ func PYToLat(y float64) float64 {
 	return val
 }
 
-// PToLonLat given a set of coordinates (x,y) it will convert them to Lon/Lat coordinates. If more then x,y is given (i.e. z, and m) they will be returned untransformed.
 func PToLonLat(c ...float64) ([]float64, error) {
 	if len(c) < 2 {
 		return c, ErrCoordsRequire2Values
@@ -73,13 +72,10 @@ func PToLonLat(c ...float64) ([]float64, error) {
 	return crds, nil
 }
 
-// PToXY given a set of coordinates (lon,lat) it will convert them to X,Y coordinates. If more then lon/lat is given (i.e. z, and m) they will be returned untransformed.
 func PToXY(c ...float64) ([]float64, error) {
 	if len(c) < 2 {
 		return c, ErrCoordsRequire2Values
 	}
-	// log.Println("Lon/Lat", c)
-	//x, y := PLonToX(c[0]), PLatToY(c[1])
 
 	crds := []float64{PLonToX(c[0]), PLatToY(c[1])}
 	crds = append(crds, c[2:]...)

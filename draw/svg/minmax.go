@@ -8,11 +8,13 @@ import (
 
 type MinMax struct {
 	MinX, MinY, MaxX, MaxY int64
+	initialized            bool
 }
 
 func (mm MinMax) Min() (int64, int64) {
 	return mm.MinX, mm.MinY
 }
+
 func (mm MinMax) Max() (int64, int64) {
 	return mm.MaxX, mm.MaxY
 }
@@ -20,9 +22,11 @@ func (mm MinMax) Max() (int64, int64) {
 func (mm MinMax) Width() int64 {
 	return mm.MaxX - mm.MinX
 }
+
 func (mm MinMax) Height() int64 {
 	return mm.MaxY - mm.MinY
 }
+
 func (mm MinMax) SentinalPts() [][]int64 {
 	return [][]int64{
 		{mm.MinX, mm.MinY},
@@ -32,13 +36,19 @@ func (mm MinMax) SentinalPts() [][]int64 {
 	}
 }
 
+// Remove the special case from MinMax method
+
+// Remove special zero handling from MinMax method
 func (mm *MinMax) MinMax(m1 *MinMax) *MinMax {
-
-	if mm == nil {
-		mm = &MinMax{}
+	if m1 == nil || !m1.initialized {
+		return mm
 	}
-
-	if m1 == nil {
+	if !mm.initialized {
+		mm.MinX = m1.MinX
+		mm.MinY = m1.MinY
+		mm.MaxX = m1.MaxX
+		mm.MaxY = m1.MaxY
+		mm.initialized = true
 		return mm
 	}
 
@@ -59,7 +69,32 @@ func (mm *MinMax) MinMax(m1 *MinMax) *MinMax {
 
 func (mm *MinMax) Fn() *MinMax                        { return mm }
 func (mm *MinMax) MinMaxFn(fn func() *MinMax) *MinMax { return mm.MinMax(fn()) }
-func (mm *MinMax) MinMaxPt(x, y int64) *MinMax        { return mm.MinMax(&MinMax{x, y, x, y}) }
+
+// Update MinMaxPt to handle initialization properly
+func (mm *MinMax) MinMaxPt(x, y int64) *MinMax {
+	if !mm.initialized {
+		mm.MinX = x
+		mm.MinY = y
+		mm.MaxX = x
+		mm.MaxY = y
+		mm.initialized = true
+		return mm
+	}
+
+	if x < mm.MinX {
+		mm.MinX = x
+	}
+	if y < mm.MinY {
+		mm.MinY = y
+	}
+	if x > mm.MaxX {
+		mm.MaxX = x
+	}
+	if y > mm.MaxY {
+		mm.MaxY = y
+	}
+	return mm
+}
 func (mm *MinMax) OfGeometry(gs ...geom.Geometry) *MinMax {
 	for _, g := range gs {
 		switch geo := g.(type) {
@@ -97,6 +132,7 @@ func (mm *MinMax) OfGeometry(gs ...geom.Geometry) *MinMax {
 	}
 	return mm
 }
+
 func (mm *MinMax) String() string {
 	if mm == nil {
 		return "(nil)[0 0 , 0 0]"
@@ -105,10 +141,8 @@ func (mm *MinMax) String() string {
 }
 
 func (mm *MinMax) IsZero() bool {
-	return mm == nil ||
-		(mm.MinX == 0 && mm.MinY == 0 && mm.MaxX == 0 && mm.MaxY == 0)
+	return mm == nil || !mm.initialized
 }
-
 func (mm *MinMax) ExpandBy(n int64) *MinMax {
 	mm.MinX -= n
 	mm.MinY -= n

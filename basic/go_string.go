@@ -27,23 +27,23 @@ func (l Line) GoStringTypeDecorated(withType bool, indent int, lineComment strin
 	}
 	indentString := strings.Repeat("\t", indent)
 
-	var byteString, bytestr []rune
-	lastI := -1
+	var pointString, resultString strings.Builder
+	lastIndex := -1
 	for i, p := range l {
-		byteString = append(byteString, []rune(pointDecorator(p))...)
+		pointString.WriteString(pointDecorator(p))
 
 		if (i+1)%numberOfPointsPerLine == 0 {
-			bytestr = append(bytestr, []rune(fmt.Sprintf(pointLineFormat, indentString, string(byteString), lastI+1, i))...)
-			byteString = byteString[:0]
-			lastI = i
+			fmt.Fprintf(&resultString, pointLineFormat, indentString, pointString.String(), lastIndex+1, i)
+			pointString.Reset()
+			lastIndex = i
 		}
 	}
-	if len(byteString) > 0 {
-		bytestr = append(bytestr, []rune(fmt.Sprintf(pointLineFormat, indentString, string(byteString), lastI+1, len(l)-1))...)
-		byteString = byteString[:0]
+	if pointString.Len() > 0 {
+		fmt.Fprintf(&resultString, pointLineFormat, indentString, pointString.String(), lastIndex+1, len(l)-1)
+		pointString.Reset()
 	}
 
-	return fmt.Sprintf(lineFormat, indentString, typeName, len(l), l.Direction(), lineComment, string(bytestr), indentString)
+	return fmt.Sprintf(lineFormat, indentString, typeName, len(l), l.Direction(), lineComment, resultString.String(), indentString)
 }
 
 func (l Line) GoStringTyped(withType bool, indent int, lineComment string) string {

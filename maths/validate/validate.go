@@ -19,7 +19,7 @@ func CleanLinestring(g []float64) (l []float64, err error) {
 	i := 0
 	for x, y := 0, 1; y < len(g); x, y = x+2, y+2 {
 
-		p := maths.Pt{g[x], g[y]}
+		p := maths.Pt{X: g[x], Y: g[y]}
 		ptsMap[p] = append(ptsMap[p], i)
 		pts = append(pts, p)
 		i++
@@ -54,13 +54,13 @@ func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *general.Extent,
 	var plygLines []maths.MultiLine
 	for _, g := range gs {
 		for _, l := range g.Sublines() {
-			segs, err := LineStringToSegments(l)
-			if err != nil {
-				return mp, err
+			segs, cerr := LineStringToSegments(l)
+			if cerr != nil {
+				return mp, cerr
 			}
 			plygLines = append(plygLines, segs)
-			if err := ctx.Err(); err != nil {
-				return mp, err
+			if cerr := ctx.Err(); cerr != nil {
+				return mp, cerr
 			}
 		}
 	}
@@ -73,8 +73,8 @@ func makePolygonValid(ctx context.Context, hm *hitmap.M, extent *general.Extent,
 		for j := range plyPoints[i] {
 			nl := basic.NewLineFromPt(plyPoints[i][j]...)
 			p = append(p, nl)
-			if err := ctx.Err(); err != nil {
-				return mp, err
+			if cerr := ctx.Err(); cerr != nil {
+				return mp, cerr
 			}
 		}
 		mp = append(mp, p)

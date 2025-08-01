@@ -27,7 +27,6 @@ var testExtents = []gen.Extent{
 }
 
 func TestLineString(t *testing.T) {
-
 	type tcase struct {
 		extent   *gen.Extent
 		linestr  geom.LineString

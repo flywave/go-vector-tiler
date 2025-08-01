@@ -8,7 +8,7 @@ import (
 	"github.com/gdey/tbltest"
 )
 
-func _TestConstuctPolygon(t *testing.T) {
+func TestConstuctPolygon(t *testing.T) {
 	type testcase struct {
 		lines []maths.Line
 	}

@@ -5,6 +5,7 @@ import (
 
 	geom "github.com/flywave/go-geom"
 	gen "github.com/flywave/go-geom/general"
+
 	"github.com/flywave/go-vector-tiler/convert"
 	"github.com/flywave/go-vector-tiler/maths"
 )

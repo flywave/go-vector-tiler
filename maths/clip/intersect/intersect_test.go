@@ -9,7 +9,6 @@ import (
 )
 
 func TestNewIntersect(t *testing.T) {
-
 	sl, err := subject.New([]float64{-5, -5, -5, 5, 5, 5, 5, -5})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -58,5 +57,4 @@ func TestNewIntersect(t *testing.T) {
 		})
 		current++
 	}
-
 }

@@ -84,10 +84,11 @@ func TestSplitPoints(t *testing.T) {
 		},
 	).Run(fn)
 }
+
 func TestSplitSegments(t *testing.T) {
 	type tcase struct {
 		segs    []maths.Line
-		lns     [][2][2]float64
+		lns     [][2][]float64
 		clipbox *general.Extent
 		err     error
 	}
@@ -118,7 +119,7 @@ func TestSplitSegments(t *testing.T) {
 				{{X: 0, Y: 9}, {X: 4, Y: 17}},
 				{{X: 0, Y: 7}, {X: 3, Y: 16}},
 			},
-			lns: [][2][2]float64{
+			lns: [][2][]float64{
 				{{0, 9}, {2, 13}},
 				{{2, 13}, {4, 17}},
 				{{0, 7}, {2, 13}},
@@ -130,7 +131,7 @@ func TestSplitSegments(t *testing.T) {
 				{{X: 0, Y: 9}, {X: 4, Y: 17}},
 				{{X: 0, Y: 7}, {X: 2, Y: 13}},
 			},
-			lns: [][2][2]float64{
+			lns: [][2][]float64{
 				{{0, 9}, {2, 13}},
 				{{2, 13}, {4, 17}},
 				{{0, 7}, {2, 13}},
@@ -141,7 +142,7 @@ func TestSplitSegments(t *testing.T) {
 				{{X: 0, Y: 9}, {X: 2, Y: 13}},
 				{{X: 0, Y: 7}, {X: 3, Y: 16}},
 			},
-			lns: [][2][2]float64{
+			lns: [][2][]float64{
 				{{0, 9}, {2, 13}},
 				{{0, 7}, {2, 13}},
 				{{2, 13}, {3, 16}},
@@ -153,7 +154,7 @@ func TestSplitSegments(t *testing.T) {
 				{{X: 0, Y: 7}, {X: 3, Y: 16}},
 				{{X: 0, Y: 5}, {X: 2, Y: 13}},
 			},
-			lns: [][2][2]float64{
+			lns: [][2][]float64{
 				{{0, 9}, {2, 13}},
 				{{2, 13}, {4, 17}},
 				{{0, 7}, {2, 13}},

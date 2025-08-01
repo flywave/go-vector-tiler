@@ -13,14 +13,14 @@ type basicGeometry struct {
 
 func point(pts []float64) (Point, error) {
 	if len(pts) < 2 {
-		return Point{}, fmt.Errorf("Not enough points for a Point")
+		return Point{}, fmt.Errorf("not enough points for a Point")
 	}
 	return Point{pts[0], pts[1]}, nil
 }
 
 func point3(pts []float64) (Point3, error) {
 	if len(pts) < 3 {
-		return Point3{}, fmt.Errorf("Not enough points for a Point3")
+		return Point3{}, fmt.Errorf("not enough points for a Point3")
 	}
 	return Point3{pts[0], pts[1], pts[2]}, nil
 }
@@ -55,8 +55,8 @@ func unmarshalBasicGeometry(bgeo basicGeometry) (geo Geometry, err error) {
 		if err = json.Unmarshal(bgeo.Coordinates, &pts); err != nil {
 			return nil, err
 		}
-		mp, err := pointSlice(pts)
-		return MultiPoint(mp), err
+		mp, cerr := pointSlice(pts)
+		return MultiPoint(mp), cerr
 	case "MultiPoint3":
 		var mp MultiPoint3
 		var pts [][]float64
@@ -64,9 +64,9 @@ func unmarshalBasicGeometry(bgeo basicGeometry) (geo Geometry, err error) {
 			return nil, err
 		}
 		for _, p := range pts {
-			pt, err := point3(p)
-			if err != nil {
-				return nil, err
+			pt, cerr := point3(p)
+			if cerr != nil {
+				return nil, cerr
 			}
 			mp = append(mp, pt)
 		}
@@ -77,8 +77,8 @@ func unmarshalBasicGeometry(bgeo basicGeometry) (geo Geometry, err error) {
 		if err = json.Unmarshal(bgeo.Coordinates, &pts); err != nil {
 			return nil, err
 		}
-		mp, err := pointSlice(pts)
-		return Line(mp), err
+		mp, cerr := pointSlice(pts)
+		return Line(mp), cerr
 
 	case "MultiLineString":
 		var ml MultiLine
@@ -87,9 +87,9 @@ func unmarshalBasicGeometry(bgeo basicGeometry) (geo Geometry, err error) {
 			return nil, err
 		}
 		for _, lpts := range lines {
-			mp, err := pointSlice(lpts)
-			if err != nil {
-				return nil, err
+			mp, cerr := pointSlice(lpts)
+			if cerr != nil {
+				return nil, cerr
 			}
 			ml = append(ml, Line(mp))
 		}
@@ -102,9 +102,9 @@ func unmarshalBasicGeometry(bgeo basicGeometry) (geo Geometry, err error) {
 			return nil, err
 		}
 		for _, lpts := range lines {
-			mp, err := pointSlice(lpts)
-			if err != nil {
-				return nil, err
+			mp, cerr := pointSlice(lpts)
+			if cerr != nil {
+				return nil, cerr
 			}
 			p = append(p, Line(mp))
 		}
@@ -142,7 +142,7 @@ func unmarshalBasicGeometry(bgeo basicGeometry) (geo Geometry, err error) {
 		return c, nil
 
 	}
-	return nil, fmt.Errorf("Unknown Type (%v).", bgeo.Type)
+	return nil, fmt.Errorf("unknown Type (%v)", bgeo.Type)
 
 }
 
