@@ -3,14 +3,12 @@ github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75/go.mod h1:K08gAheRH3
 github.com/barnex/fmath v0.0.0-20150108074215-ec9671f295c2/go.mod h1:G7XW+2O6Hk/x6OP8AuwZjI8ZTyXvKDTTKaRK92gapfk=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/devork/geom v0.0.5/go.mod h1:8Wn8UNIJlX3waA51IiE8NHPWm1JFITeKJfxmYcK+hYg=
-github.com/flywave/go-geoid v0.0.0-20210705014121-cd8f70cb88bb h1:cfvIpGcu887EYg+ydfMj+hWSHHjxBBu066XK2+rKAQc=
-github.com/flywave/go-geoid v0.0.0-20210705014121-cd8f70cb88bb/go.mod h1:ndXH2J5+CsynPtyL7oihZtN8rRxJ8kpqqwy2DOa86OQ=
-github.com/flywave/go-geom v0.0.0-20210604134758-e972b6e6956d/go.mod h1:whIEyVfpaBVcYiDCnnc4IJg5CI5KpLC3quy95YJ1W9I=
 github.com/flywave/go-geom v0.0.0-20250607125323-f685bf20f12c h1:SxQgZciqp+IBGFyKhgk3XwFVUTc/sFRrSPkzJsKx0P4=
 github.com/flywave/go-geom v0.0.0-20250607125323-f685bf20f12c/go.mod h1:8xN6kA4AVXamQagVM3hJ041A2jt93KzQqL5f2aCEKy8=
-github.com/flywave/go-geos v0.0.0-20210901070302-5537e39a4985 h1:VGHfOMEFPCAPDcHaBBRGK5do+Pc+gshj+l1HonAjOLg=
-github.com/flywave/go-geos v0.0.0-20210901070302-5537e39a4985/go.mod h1:2CKYxCmQE8aQzzVrw23MLuMmC/BA5EvVIdvUaPkeAKI=
+github.com/flywave/go-mapbox v0.0.0-20250802054600-bc350f35abb4 h1:HKf2BWUOupvx206dEQ0ya79mMvR8IdUp8NdZVuQ8J4w=
+github.com/flywave/go-mapbox v0.0.0-20250802054600-bc350f35abb4/go.mod h1:sp9zd/vcnXWjRBKk3EtC/5/+O4eQKyV+13glPV6KBV0=
+github.com/flywave/go-pbf v0.0.0-20230306063816-5e5b0da27bbd h1:WbnDF3Mw2TrEkds/iMlBh4nayiFLKWyryo84NvWWI/U=
+github.com/flywave/go-pbf v0.0.0-20230306063816-5e5b0da27bbd/go.mod h1:cfHFEG24/0hT2xCSLJb8rT/2WE8ieeIrbOJq1sql/fg=
 github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290/go.mod h1:QbQZlarSgCPYFAmoTduiDUd4JCnolimXUswTAnSrFWY=
 github.com/flywave/go3d v0.0.0-20250314015505-bf0fda02e242 h1:XU3CfYUCsQoAlTGMmbIWwUc7h4oPP6f7BjzffaObwP8=
 github.com/flywave/go3d v0.0.0-20250314015505-bf0fda02e242/go.mod h1:bvblxPT+cF0zgDi71CuusPPWCwqU0SikE9ySl2NzeQw=
@@ -21,6 +19,8 @@ github.com/go-test/deep v1.0.7/go.mod h1:QV8Hv/iy04NyLBxAdO9njL0iVPN1S4d/A3NVv1V
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.2.0 h1:qJYtXnJRWmpe7m/3XlyhrsLrEURqHRM2kxzoxXqyUDs=
 github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/paulmach/go.geojson v1.4.0 h1:5x5moCkCtDo5x8af62P9IOAYGQcYHtxz2QJ3x1DoCgY=
+github.com/paulmach/go.geojson v1.4.0/go.mod h1:YaKx1hKpWF+T2oj2lFJPsW/t1Q5e1jQI61eoQSTwpIs=
 github.com/pborman/uuid v1.2.1 h1:+ZZIw58t/ozdjRaXh/3awHfmWRbzYxJoAdNJxe/3pvw=
 github.com/pborman/uuid v1.2.1/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtPdI/k=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

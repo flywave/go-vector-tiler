@@ -3,8 +3,9 @@ package tile
 import (
 	"fmt"
 
-	"github.com/flywave/go-geom"
 	gen "github.com/flywave/go-geom/general"
+
+	"github.com/flywave/go-geom"
 	"github.com/flywave/go-vector-tiler/maths/clip"
 )
 
