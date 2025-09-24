@@ -32,13 +32,13 @@ import (
 
 func main() {
 	// 创建配置
-	config := &tile.TilerConfig{
+	config := &tile.Config{
 		Provider:           &MyDataProvider{}, // 实现Provider接口
 		MinZoom:           0,
 		MaxZoom:           14,
 		Concurrency:       4,
 		OutputDir:         "./tiles",
-		Exporter:          tile.NewMVTTileExporter(),
+		Exporter:          tile.NewMVTExporter(),
 	}
 
 	// 创建Tiler实例
@@ -53,10 +53,10 @@ func main() {
 
 ## API文档
 
-### TilerConfig
+### Config
 
 ```go
-type TilerConfig struct {
+type Config struct {
 	Provider              Provider      // 数据提供者
 	Progress              Progress      // 进度监控
 	TileExtent            uint64        // 瓦片范围(默认32768)
@@ -69,15 +69,15 @@ type TilerConfig struct {
 	SpecificZooms         []int         // 指定级别
 	Bound                 *[4]float64   // 边界范围
 	SRS                   string        // 空间参考系统
-	Exporter              TileExporter  // 导出器
+	Exporter              Exporter  // 导出器
 	OutputDir             string        // 输出目录
 }
 ```
 
-### TileExporter接口
+### Exporter接口
 
 ```go
-type TileExporter interface {
+type Exporter interface {
 	SaveTile(res []*Layer, tile *Tile, path string) error
 	Extension() string
 	RelativeTilePath(zoom, x, y int) string
@@ -86,10 +86,10 @@ type TileExporter interface {
 
 ### 内置导出器
 
-1. **GeoJSONTileExporter** - 导出为GeoJSON格式
-2. **MVTTileExporter** - 导出为MVT(Mapbox Vector Tiles)格式
+1. **GeoJSONExporter** - 导出为GeoJSON格式
+2. **MVTExporter** - 导出为MVT(Mapbox Vector Tiles)格式
 
-#### MVTTileExporter配置
+#### MVTExporter配置
 
 ```go
 type MVTOptions struct {
@@ -114,10 +114,10 @@ options := tile.MVTOptions{
 	UseEmptyTile: true,
 	BufferSize:   1024 * 32, // 32KB
 }
-exporter := tile.NewMVTTileExporterWithOptions(options)
+exporter := tile.NewMVTExporterWithOptions(options)
 
 // 创建配置
-config := &tile.TilerConfig{
+config := &tile.Config{
 	Provider:   &MyDataProvider{},
 	MinZoom:    0,
 	MaxZoom:    14,
@@ -149,7 +149,7 @@ func (p *MyProgress) Warn(msg string, args ...interface{}) {
 }
 
 // 使用自定义进度监控
-config := &tile.TilerConfig{
+config := &tile.Config{
 	Progress: &MyProgress{},
 	// 其他配置...
 }

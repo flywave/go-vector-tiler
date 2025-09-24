@@ -91,12 +91,12 @@ func createTestLineLayer(name string) *Layer {
 	return layer
 }
 
-// TestNewMVTTileExporter 测试创建新的MVT导出器
-func TestNewMVTTileExporter(t *testing.T) {
-	exporter := NewMVTTileExporter()
+// TestNewMVTExporter 测试创建新的MVT导出器
+func TestNewMVTExporter(t *testing.T) {
+	exporter := NewMVTExporter()
 
 	if exporter == nil {
-		t.Fatal("NewMVTTileExporter 返回了 nil")
+		t.Fatal("NewMVTExporter 返回了 nil")
 	}
 
 	// 检查默认选项
@@ -111,8 +111,8 @@ func TestNewMVTTileExporter(t *testing.T) {
 	}
 }
 
-// TestNewMVTTileExporterWithOptions 测试使用自定义选项创建新的MVT导出器
-func TestNewMVTTileExporterWithOptions(t *testing.T) {
+// TestNewMVTExporterWithOptions 测试使用自定义选项创建新的MVT导出器
+func TestNewMVTExporterWithOptions(t *testing.T) {
 	customOptions := MVTOptions{
 		FileMode:     0600,
 		DirMode:      0700,
@@ -121,10 +121,10 @@ func TestNewMVTTileExporterWithOptions(t *testing.T) {
 		BufferSize:   1024 * 32,
 	}
 
-	exporter := NewMVTTileExporterWithOptions(customOptions)
+	exporter := NewMVTExporterWithOptions(customOptions)
 
 	if exporter == nil {
-		t.Fatal("NewMVTTileExporterWithOptions 返回了 nil")
+		t.Fatal("NewMVTExporterWithOptions 返回了 nil")
 	}
 
 	// 检查自定义选项
@@ -141,7 +141,7 @@ func TestNewMVTTileExporterWithOptions(t *testing.T) {
 
 // TestGenerateMVT 测试生成MVT数据
 func TestGenerateMVT(t *testing.T) {
-	exporter := NewMVTTileExporter()
+	exporter := NewMVTExporter()
 
 	// 创建测试图层
 	layers := []*Layer{
@@ -171,7 +171,7 @@ func TestGenerateMVTEmptyLayers(t *testing.T) {
 	customOptions := MVTOptions{
 		UseEmptyTile: false,
 	}
-	exporter := NewMVTTileExporterWithOptions(customOptions)
+	exporter := NewMVTExporterWithOptions(customOptions)
 
 	// 创建空图层
 	var emptyLayers []*Layer
@@ -188,7 +188,7 @@ func TestGenerateMVTEmptyLayers(t *testing.T) {
 	}
 
 	// 使用默认导出器（使用空瓦片）
-	defaultExporter := NewMVTTileExporter()
+	defaultExporter := NewMVTExporter()
 
 	// 生成MVT数据
 	mvtData, err := defaultExporter.GenerateMVT(emptyLayers, tile)
@@ -205,7 +205,7 @@ func TestGenerateMVTEmptyLayers(t *testing.T) {
 
 // TestSaveTileToWriter 测试将瓦片数据写入io.Writer
 func TestSaveTileToWriter(t *testing.T) {
-	exporter := NewMVTTileExporter()
+	exporter := NewMVTExporter()
 
 	// 创建测试图层
 	layers := []*Layer{
@@ -239,7 +239,7 @@ func TestSaveTileToWriter(t *testing.T) {
 
 // TestRelativeTilePath 测试相对路径生成
 func TestRelativeTilePath(t *testing.T) {
-	exporter := NewMVTTileExporter()
+	exporter := NewMVTExporter()
 
 	// 测试路径生成
 	path := exporter.RelativeTilePath(10, 512, 512)
@@ -253,7 +253,7 @@ func TestRelativeTilePath(t *testing.T) {
 
 // TestAbsoluteTilePath 测试绝对路径生成
 func TestAbsoluteTilePath(t *testing.T) {
-	exporter := NewMVTTileExporter()
+	exporter := NewMVTExporter()
 
 	// 测试路径生成
 	baseDir := "/tmp/tiles"
@@ -268,7 +268,7 @@ func TestAbsoluteTilePath(t *testing.T) {
 
 // TestSaveTile 测试保存瓦片到文件
 func TestSaveTile(t *testing.T) {
-	exporter := NewMVTTileExporter()
+	exporter := NewMVTExporter()
 
 	// 创建临时目录
 	tempDir, err := os.MkdirTemp("", "mvt_test")
@@ -323,7 +323,7 @@ func TestSaveTile(t *testing.T) {
 
 // TestBatchSaveTiles 测试批量保存瓦片
 func TestBatchSaveTiles(t *testing.T) {
-	exporter := NewMVTTileExporter()
+	exporter := NewMVTExporter()
 
 	// 创建临时目录
 	tempDir, err := os.MkdirTemp("", "mvt_batch_test")
@@ -374,7 +374,7 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 
 // TestErrorHandling 测试错误处理
 func TestErrorHandling(t *testing.T) {
-	exporter := NewMVTTileExporter()
+	exporter := NewMVTExporter()
 
 	// 创建测试图层
 	layers := []*Layer{

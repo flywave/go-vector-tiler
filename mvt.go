@@ -9,22 +9,14 @@ import (
 	"path/filepath"
 	"sync"
 
+	m "github.com/flywave/go-mapbox/tileid"
+
 	"github.com/flywave/go-geom"
 	"github.com/flywave/go-mapbox/mvt"
-	m "github.com/flywave/go-mapbox/tileid"
 )
 
 //go:embed empty.mvt
 var mvtEmpty []byte
-
-var (
-	// ErrInvalidTile 表示无效的瓦片
-	ErrInvalidTile = errors.New("无效的瓦片")
-	// ErrEmptyLayers 表示空图层
-	ErrEmptyLayers = errors.New("空图层")
-	// ErrInvalidPath 表示无效的路径
-	ErrInvalidPath = errors.New("无效的路径")
-)
 
 // MVTOptions MVT导出选项
 type MVTOptions struct {
@@ -49,30 +41,30 @@ var DefaultMVTOptions = MVTOptions{
 	BufferSize:   1024 * 16, // 16KB
 }
 
-// MVTTileExporter MVT格式导出器
-type MVTTileExporter struct {
+// MVTExporter MVT格式导出器
+type MVTExporter struct {
 	// Options 导出选项
 	Options MVTOptions
 	// 互斥锁，用于并发安全
 	mu sync.Mutex
 }
 
-// NewMVTTileExporter 创建新的MVT导出器
-func NewMVTTileExporter() *MVTTileExporter {
-	return &MVTTileExporter{
+// NewMVTExporter 创建新的MVT导出器
+func NewMVTExporter() *MVTExporter {
+	return &MVTExporter{
 		Options: DefaultMVTOptions,
 	}
 }
 
-// NewMVTTileExporterWithOptions 使用自定义选项创建新的MVT导出器
-func NewMVTTileExporterWithOptions(options MVTOptions) *MVTTileExporter {
-	return &MVTTileExporter{
+// NewMVTExporterWithOptions 使用自定义选项创建新的MVT导出器
+func NewMVTExporterWithOptions(options MVTOptions) *MVTExporter {
+	return &MVTExporter{
 		Options: options,
 	}
 }
 
 // SaveTile 保存瓦片为MVT格式
-func (s *MVTTileExporter) SaveTile(res []*Layer, tile *Tile, path string) error {
+func (s *MVTExporter) SaveTile(res []*Layer, tile *Tile, path string) error {
 	if tile == nil {
 		return ErrInvalidTile
 	}
@@ -98,7 +90,7 @@ func (s *MVTTileExporter) SaveTile(res []*Layer, tile *Tile, path string) error 
 }
 
 // GenerateMVT 生成MVT数据
-func (s *MVTTileExporter) GenerateMVT(layers []*Layer, tile *Tile) ([]byte, error) {
+func (s *MVTExporter) GenerateMVT(layers []*Layer, tile *Tile) ([]byte, error) {
 	if tile == nil {
 		return nil, ErrInvalidTile
 	}
@@ -167,7 +159,7 @@ func (s *MVTTileExporter) GenerateMVT(layers []*Layer, tile *Tile) ([]byte, erro
 }
 
 // SaveTileToWriter 将瓦片数据写入io.Writer
-func (s *MVTTileExporter) SaveTileToWriter(res []*Layer, tile *Tile, writer io.Writer) error {
+func (s *MVTExporter) SaveTileToWriter(res []*Layer, tile *Tile, writer io.Writer) error {
 	if writer == nil {
 		return errors.New("无效的writer")
 	}
@@ -184,22 +176,22 @@ func (s *MVTTileExporter) SaveTileToWriter(res []*Layer, tile *Tile, writer io.W
 }
 
 // Extension 返回文件扩展名
-func (s *MVTTileExporter) Extension() string {
+func (s *MVTExporter) Extension() string {
 	return "mvt"
 }
 
 // RelativeTilePath 返回相对路径
-func (s *MVTTileExporter) RelativeTilePath(zoom, x, y int) string {
+func (s *MVTExporter) RelativeTilePath(zoom, x, y int) string {
 	return filepath.Join(fmt.Sprintf("%d", zoom), fmt.Sprintf("%d", x), fmt.Sprintf("%d.%s", y, s.Extension()))
 }
 
 // AbsoluteTilePath 返回绝对路径
-func (s *MVTTileExporter) AbsoluteTilePath(baseDir string, zoom, x, y int) string {
+func (s *MVTExporter) AbsoluteTilePath(baseDir string, zoom, x, y int) string {
 	return filepath.Join(baseDir, s.RelativeTilePath(zoom, x, y))
 }
 
 // BatchSaveTiles 批量保存瓦片
-func (s *MVTTileExporter) BatchSaveTiles(layersByTile map[*Tile][]*Layer, baseDir string) error {
+func (s *MVTExporter) BatchSaveTiles(layersByTile map[*Tile][]*Layer, baseDir string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

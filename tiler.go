@@ -1,7 +1,6 @@
 package tile
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 
@@ -23,124 +22,23 @@ import (
 const WGS84_PROJ4 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 const GMERC_PROJ4 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over"
 
-// TileExporter 定义瓦片导出接口
-type TileExporter interface {
-	SaveTile(res []*Layer, tile *Tile, path string) error
-	Extension() string
-	RelativeTilePath(zoom, x, y int) string
-}
-
-// GeoJSONTileExporter GeoJSON格式导出器
-type GeoJSONTileExporter struct{}
-
-func (s *GeoJSONTileExporter) SaveTile(res []*Layer, tile *Tile, path string) error {
-	// 确保目录存在
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("创建目录失败: %w", err)
-	}
-
-	// 构建GeoJSON FeatureCollection
-	geoJSONData := map[string]interface{}{
-		"type":     "FeatureCollection",
-		"features": []interface{}{},
-		"properties": map[string]interface{}{
-			"zoom": tile.Z,
-			"x":    tile.X,
-			"y":    tile.Y,
-		},
-	}
-
-	// 遍历所有图层和要素，添加到GeoJSON
-	for _, layer := range res {
-		for _, feature := range layer.Features {
-			// 假设feature.Geometry已经是GeoJSON兼容格式
-			featureData := map[string]interface{}{
-				"type":       "Feature",
-				"geometry":   feature.Geometry,
-				"properties": feature.Properties,
-			}
-			geoJSONData["features"] = append(geoJSONData["features"].([]interface{}), featureData)
-		}
-	}
-
-	// 将GeoJSON数据写入文件
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("创建文件失败: %w", err)
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(geoJSONData); err != nil {
-		return fmt.Errorf("编码GeoJSON失败: %w", err)
-	}
-
-	return nil
-}
-
-func (s *GeoJSONTileExporter) Extension() string {
-	return "geojson"
-}
-
-func (s *GeoJSONTileExporter) RelativeTilePath(zoom, x, y int) string {
-	return filepath.Join(fmt.Sprintf("%d", zoom), fmt.Sprintf("%d", x), fmt.Sprintf("%d.%s", y, s.Extension()))
-}
-
-// DefaultTileExporter 默认瓦片导出器
-var DefaultTileExporter TileExporter = &GeoJSONTileExporter{}
-
-// TilerConfig 配置结构体
-type TilerConfig struct {
-	Provider              Provider
-	Progress              Progress
-	TileExtent            uint64
-	TileBuffer            uint64
-	SimplifyGeometries    bool
-	SimplificationMaxZoom uint
-	Concurrency           int
-	MinZoom               int
-	MaxZoom               int
-	SpecificZooms         []int
-	Bound                 *[4]float64
-	SRS                   string
-	Exporter              TileExporter
-	OutputDir             string
-}
-
-// DefaultTilerConfig 默认配置
-var DefaultTilerConfig = TilerConfig{
-	TileExtent:            32768,
-	TileBuffer:            64,
-	SimplifyGeometries:    true,
-	SimplificationMaxZoom: 10,
-	Concurrency:           4,
-	MinZoom:               0,
-	MaxZoom:               14,
-	SRS:                   WGS84_PROJ4,
-	Bound:                 &[4]float64{-180, -90, 180, 90},
-	Exporter:              nil,
-	OutputDir:             "./tiles",
-}
-
 // NewTiler 创建Tiler实例
-func NewTiler(config *TilerConfig) *Tiler {
+func NewTiler(config *Config) *Tiler {
 	// 使用默认配置填充缺失字段
 	if config == nil {
-		config = &DefaultTilerConfig
+		config = &DefaultConfig
 	} else {
 		if config.TileExtent == 0 {
-			config.TileExtent = DefaultTilerConfig.TileExtent
+			config.TileExtent = DefaultConfig.TileExtent
 		}
 		if config.TileBuffer == 0 {
-			config.TileBuffer = DefaultTilerConfig.TileBuffer
+			config.TileBuffer = DefaultConfig.TileBuffer
 		}
 		if config.Concurrency <= 0 {
-			config.Concurrency = DefaultTilerConfig.Concurrency
+			config.Concurrency = DefaultConfig.Concurrency
 		}
 		if config.SimplificationMaxZoom == 0 {
-			config.SimplificationMaxZoom = DefaultTilerConfig.SimplificationMaxZoom
+			config.SimplificationMaxZoom = DefaultConfig.SimplificationMaxZoom
 		}
 		// 设置默认SRS和Bound
 		if config.SRS == "" {
@@ -151,9 +49,9 @@ func NewTiler(config *TilerConfig) *Tiler {
 		}
 		// 设置默认输出目录
 		if config.OutputDir == "" {
-			config.OutputDir = DefaultTilerConfig.OutputDir
+			config.OutputDir = DefaultConfig.OutputDir
 		}
-		// Exporter默认为nil，将使用DefaultTileExporter
+		// Exporter默认为nil，将使用DefaultExporter
 	}
 
 	// 创建网格配置
@@ -190,7 +88,7 @@ type tileTask struct {
 
 // Tiler 瓦片生成器
 type Tiler struct {
-	config     *TilerConfig
+	config     *Config
 	ctx        context.Context
 	cancel     context.CancelFunc
 	taskQueue  chan *tileTask
@@ -416,7 +314,7 @@ func (m *Tiler) processTile(task *tileTask) {
 func (m *Tiler) exportTile(layers []*Layer, t *Tile) error {
 	exporter := m.config.Exporter
 	if exporter == nil {
-		exporter = DefaultTileExporter
+		exporter = DefaultExporter
 	}
 
 	if exporter == nil {
