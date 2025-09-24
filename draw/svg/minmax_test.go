@@ -123,7 +123,7 @@ func TestMinMaxMerge(t *testing.T) {
 			desc:     "Merge both nil",
 			mm1:      nil,
 			mm2:      nil,
-			expected: &MinMax{},
+			expected: &MinMax{0, 0, 0, 0, false},
 		},
 	)
 

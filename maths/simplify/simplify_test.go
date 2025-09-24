@@ -310,7 +310,7 @@ func TestSimplifyPolygon(t *testing.T) {
 
 	// 测试大容差
 	result = simplifyPolygon(polygon, 1.0)
-	if result != nil && len(result) > 0 {
+	if len(result) > 0 {
 		// 如果返回结果，验证基本有效性
 		for i, ring := range result {
 			if len(ring) < 3 {

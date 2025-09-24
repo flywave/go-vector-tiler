@@ -40,6 +40,18 @@ func (mm MinMax) SentinalPts() [][]int64 {
 
 // Remove special zero handling from MinMax method
 func (mm *MinMax) MinMax(m1 *MinMax) *MinMax {
+	if mm == nil {
+		if m1 == nil || !m1.initialized {
+			return &MinMax{}
+		}
+		return &MinMax{
+			MinX:        m1.MinX,
+			MinY:        m1.MinY,
+			MaxX:        m1.MaxX,
+			MaxY:        m1.MaxY,
+			initialized: true,
+		}
+	}
 	if m1 == nil || !m1.initialized {
 		return mm
 	}
@@ -72,6 +84,15 @@ func (mm *MinMax) MinMaxFn(fn func() *MinMax) *MinMax { return mm.MinMax(fn()) }
 
 // Update MinMaxPt to handle initialization properly
 func (mm *MinMax) MinMaxPt(x, y int64) *MinMax {
+	if mm == nil {
+		return &MinMax{
+			MinX:        x,
+			MinY:        y,
+			MaxX:        x,
+			MaxY:        y,
+			initialized: true,
+		}
+	}
 	if !mm.initialized {
 		mm.MinX = x
 		mm.MinY = y
@@ -148,5 +169,6 @@ func (mm *MinMax) ExpandBy(n int64) *MinMax {
 	mm.MinY -= n
 	mm.MaxX += n
 	mm.MaxY += n
+	mm.initialized = true
 	return mm
 }
