@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	geom "github.com/flywave/go-geom"
+
 	"github.com/flywave/go-vector-tiler/maths"
 )
 

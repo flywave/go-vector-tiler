@@ -13,7 +13,6 @@ import (
 )
 
 func CleanLinestring(g []float64) (l []float64, err error) {
-
 	var ptsMap = make(map[maths.Pt][]int)
 	var pts []maths.Pt
 	i := 0

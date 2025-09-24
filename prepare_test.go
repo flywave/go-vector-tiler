@@ -6,8 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/flywave/go-geom"
 	gen "github.com/flywave/go-geom/general"
+
+	"github.com/flywave/go-geom"
 )
 
 // TestPrepareGeo 测试PrepareGeo函数对不同几何类型的处理
