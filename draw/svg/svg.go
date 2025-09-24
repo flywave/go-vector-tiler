@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
+	"sync"
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/flywave/go-geom"
@@ -250,4 +252,55 @@ func (canvas *Canvas) GroupFn(attr []string, fn func(c *Canvas)) {
 	canvas.SVG.Group(attr...)
 	fn(canvas)
 	canvas.SVG.Gend()
+}
+
+// SVGOptions SVG导出选项
+type SVGOptions struct {
+	// FileMode 文件权限
+	FileMode os.FileMode
+	// DirMode 目录权限
+	DirMode os.FileMode
+	// Width 画布宽度
+	Width int
+	// Height 画布高度
+	Height int
+	// Grid 是否显示网格
+	Grid bool
+	// BufferSize 缓冲区大小
+	BufferSize int
+	// TileSize 瓦片大小
+	TileSize int
+}
+
+// DefaultSVGOptions 默认SVG选项
+var DefaultSVGOptions = SVGOptions{
+	FileMode:   0644,
+	DirMode:    0755,
+	Width:      512,
+	Height:     512,
+	Grid:       false,
+	BufferSize: 1024 * 16, // 16KB
+	TileSize:   256,
+}
+
+// SVGExporter SVG格式导出器
+type SVGExporter struct {
+	// Options 导出选项
+	Options SVGOptions
+	// 互斥锁，用于并发安全
+	mu sync.Mutex
+}
+
+// NewSVGExporter 创建新的SVG导出器
+func NewSVGExporter() *SVGExporter {
+	return &SVGExporter{
+		Options: DefaultSVGOptions,
+	}
+}
+
+// NewSVGExporterWithOptions 使用自定义选项创建新的SVG导出器
+func NewSVGExporterWithOptions(options SVGOptions) *SVGExporter {
+	return &SVGExporter{
+		Options: options,
+	}
 }
